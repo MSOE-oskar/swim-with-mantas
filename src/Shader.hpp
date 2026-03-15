@@ -1,5 +1,5 @@
 /**
-* A first project: Shader.h
+ * A first project: Shader.h
  * With: OpenGL, GLFW, GLAD, CMake
  * By Oskar Sierzega
  * Created 3/2/2024
@@ -23,21 +23,22 @@
  */
 class Shader
 {
-    public:
-        // the program ID
-        unsigned int ID;
+public:
+    // the program ID
+    unsigned int ID;
 
-        Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char *vertexPath, const char *fragmentPath);
 
-        // use the shader
-        void use() const;
+    // use the shader
+    void use() const;
 
-        // functions to set uniforms
-        void setBool(const std::string &name, bool value) const;
-        void setInt(const std::string &name, int value) const;
-        void setFloat(const std::string &name, float value) const;
-        void set4f(const std::string &name, float v0, float v1, float v2, float v3) const;
-        void setMat4(const std::string &name, glm::mat4 val) const;
+    // functions to set uniforms
+    void setBool(const std::string &name, bool value) const;
+    void setInt(const std::string &name, int value) const;
+    void setFloat(const std::string &name, float value) const;
+    void set4f(const std::string &name, float v0, float v1, float v2, float v3) const;
+    void setMat4(const std::string &name, glm::mat4 val) const;
+    void setVec3(const std::string &name, glm::vec3 val) const;
 };
 
-#endif //SHADER_H
+#endif // SHADER_H

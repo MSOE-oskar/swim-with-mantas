@@ -1,5 +1,5 @@
 /**
-* A first project: Shader.cpp
+ * A first project: Shader.cpp
  * With: OpenGL, GLFW, GLAD, CMake
  * By Oskar Sierzega
  * Created 3/2/2024
@@ -15,7 +15,8 @@
  * @param vertexPath Path of the vertex shader source file
  * @param fragmentPath Path of the fragment shader source file
  */
-Shader::Shader(const char* vertexPath, const char* fragmentPath){
+Shader::Shader(const char *vertexPath, const char *fragmentPath)
+{
     // Declare variables.
     std::string vertexCode;
     std::string fragmentCode;
@@ -45,8 +46,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
     }
     // Convert to C string so that OpenGL can use to compile
-    const char* vCode = vertexCode.c_str();
-    const char* fCode = fragmentCode.c_str();
+    const char *vCode = vertexCode.c_str();
+    const char *fCode = fragmentCode.c_str();
 
     // compile shaders
     unsigned int vertex, fragment;
@@ -67,8 +68,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
 
     if (!success)
     {
-    glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
-    std::cout << "SHADER::VERTEX::COMPILATION_FAILED\n" <<  infoLog << std::endl;
+        glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
+        std::cout << "SHADER::VERTEX::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // Create fragment shader in similar way.
@@ -80,8 +82,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-    glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
-    std::cout << "SHADER::FRAGMENT::COMPILATION_FAILED\n" <<  infoLog << std::endl;
+        glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
+        std::cout << "SHADER::FRAGMENT::COMPILATION_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // Shader Program
@@ -96,8 +99,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if (!success)
     {
-    glGetProgramInfoLog(ID, 512, nullptr, infoLog);
-    std::cout << "SHADER::PROGRAM::LINKING_FAILED\n" <<  infoLog << std::endl;
+        glGetProgramInfoLog(ID, 512, nullptr, infoLog);
+        std::cout << "SHADER::PROGRAM::LINKING_FAILED\n"
+                  << infoLog << std::endl;
     }
 
     // Delete the shaders to free up memory; once they are linked we don't need anymore
@@ -116,30 +120,32 @@ void Shader::use() const
 /**
  * The following methods are used to alter uniforms in our shaders.
  */
-void Shader::setBool(const std::string& name, const bool value) const
+void Shader::setBool(const std::string &name, const bool value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), static_cast<int>(value));
 }
 
-void Shader::setInt(const std::string& name, const int value) const
+void Shader::setInt(const std::string &name, const int value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string& name, const float value) const
+void Shader::setFloat(const std::string &name, const float value) const
 {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::set4f(const std::string& name, const float v0, const float v1, const float v2, const float v3) const
+void Shader::set4f(const std::string &name, const float v0, const float v1, const float v2, const float v3) const
 {
     glUniform4f(glGetUniformLocation(ID, name.c_str()), v0, v1, v2, v3);
 }
 
-void Shader::setMat4(const std::string& name, glm::mat4 val) const
+void Shader::setMat4(const std::string &name, glm::mat4 val) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
 }
 
-
-
+void Shader::setVec3(const std::string &name, glm::vec3 val) const
+{
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), val.x, val.y, val.z);
+}

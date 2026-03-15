@@ -55,7 +55,7 @@ Player *player = new Player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f, 8.0f, 2.0f);
 Camera *camera = player->camera;
 
 // window constants
-constexpr glm::vec4 BACKGROUND_COLOR = glm::vec4(0.0f, 0.0f, 0.50f, 1.0f);
+constexpr glm::vec3 BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
 constexpr int WINDOW_HEIGHT = 800, WINDOW_WIDTH = 1000;
 bool isFullscreen = false;      // Track fullscreen state
 GLFWmonitor *monitor = nullptr; // Default monitor
@@ -164,7 +164,7 @@ int main()
         // Background
         if (!moshing)
         {
-            glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
+            glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
         }
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -187,6 +187,8 @@ int main()
         // done each frame since they change a lot.
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
+        ourShader.setVec3("viewPos", camera->Position);
+        ourShader.setVec3("fogColor", BACKGROUND_COLOR);
         ourShader.use();
 
         std::vector<glm::vec3> collisions;
