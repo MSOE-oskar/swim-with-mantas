@@ -6,7 +6,7 @@
 #include "AxisAlignedBoundingBox.hpp"
 #include "Player.hpp"
 
-float Player::GRAVITY = 17.8f;
+float Player::GRAVITY = 1.0f;
 
 void Player::ProcessKeyboard(const Player_movement direction, const float deltaTime)
 {
@@ -30,15 +30,19 @@ void Player::ProcessKeyboard(const Player_movement direction, const float deltaT
     if (direction == DOWN)
         acceleration -= Up;
 
-    CurrentVelocity += acceleration * 0.5f;
+    CurrentVelocity += acceleration * 5.0f * deltaTime;
 }
 
 void Player::UpdatePlayer(const float deltaTime, const std::vector<glm::vec3> &collisions)
 {
     // slow down when not pressing buttons
-    CurrentVelocity.x *= 0.9f;
-    CurrentVelocity.y *= 0.9f;
-    CurrentVelocity.z *= 0.9f;
+    float dragX = 0.5f * CurrentVelocity.x * CurrentVelocity.x * deltaTime;
+    float dragY = 0.5f * CurrentVelocity.y * CurrentVelocity.y * deltaTime;
+    float dragZ = 0.5f * CurrentVelocity.z * CurrentVelocity.z * deltaTime;
+
+    CurrentVelocity.x -= (CurrentVelocity.x > 0) ? dragX : -dragX;
+    CurrentVelocity.y -= (CurrentVelocity.y > 0) ? dragY : -dragY;
+    CurrentVelocity.z -= (CurrentVelocity.z > 0) ? dragZ : -dragZ;
 
     // handle collisions
     for (const glm::vec3 collision : collisions)
