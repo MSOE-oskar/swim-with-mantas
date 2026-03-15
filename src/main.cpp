@@ -18,20 +18,6 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
-// our custom classes
-#include "Shader.hpp"
-#include "Camera.hpp"
-#include "Player.hpp"
-#include "AxisAlignedBoundingBox.hpp"
-#include "Cube.hpp"
-#include "Chunk.hpp"
-
-// stb_image for reading in images
-#include "stb_image.hpp"
-
-// noise library
-#include "FastNoiseLite.h"
-
 // GLM is a library for math in OpenGL
 // Installed in msys2 MinGW with this command:
 // pacman -S mingw-w64-x86_64-glm
@@ -39,6 +25,20 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+// stb_image for reading in images
+#include "stb_image/stb_image.hpp"
+
+// noise library
+#include "FastNoiseLite/FastNoiseLite.h"
+
+// our custom classes
+#include "Shader.hpp"
+#include "Camera.hpp"
+#include "Player.hpp"
+#include "AxisAlignedBoundingBox.hpp"
+#include "Cube.hpp"
+#include "Chunk.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);

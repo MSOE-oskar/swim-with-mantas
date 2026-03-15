@@ -4,7 +4,10 @@ project(SwimWithMantas)
 set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB SOURCES "src/*.cpp")
-add_executable(SwimWithMantas ${SOURCES})
+file(GLOB LIB_SOURCES "lib/*/*.cpp")
+add_executable(SwimWithMantas ${SOURCES} ${LIB_SOURCES})
+target_include_directories(SwimWithMantas PRIVATE lib)
+
 # Find OpenGL
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
