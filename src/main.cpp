@@ -32,6 +32,11 @@
 // noise library
 #include "FastNoiseLite/FastNoiseLite.h"
 
+// ImGui
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 // our custom classes
 #include "Shader.hpp"
 #include "Camera.hpp"
@@ -47,7 +52,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void setWindowFps(GLFWwindow *window, double currentTime);
 
-bool moshing = false, firstMouse = true;
+bool moshing = false, firstMouse = true, showDebug = false;
 
 // delta time helps us keep things consistent across system
 float deltaTime = 0.0f, lastFrame = 0.0f;
@@ -120,6 +125,17 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
     // enable vsync - set to 0 to disable, 1 to enable.
     glfwSwapInterval(1);
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
 
     // Shader Class. This handles all our shader stuff.
     const Shader ourShader("../shaders/shader.vert", "../shaders/shader.frag");
@@ -194,6 +210,15 @@ int main()
      */
     while (!glfwWindowShouldClose(window))
     {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        if (showDebug)
+        {
+            ImGui::ShowDemoWindow(); // Show demo window! :)
+        }
+
         // input
         processInput(window);
 
@@ -269,11 +294,20 @@ int main()
         // update player's position
         player->UpdatePlayer(deltaTime, collisions);
 
+        // render ImGui on top of everything else
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // check and call events and swap the buffers
         glfwSwapBuffers(window);
         // Check if any events are triggered, like keyboard or mouse
         glfwPollEvents();
     }
+
+    // cleanup ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // Just like glfwInit, we need to call this when we are done with GLFW.
     glfwTerminate();
@@ -307,6 +341,13 @@ void processInput(GLFWwindow *window)
         moshing = true;
     else
         moshing = false;
+
+    // debug screen
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS)
+    {
+        showDebug = !showDebug;
+        glfwSetInputMode(window, GLFW_CURSOR, showDebug ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+    }
 
     // movement
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
