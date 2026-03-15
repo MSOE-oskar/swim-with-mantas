@@ -41,11 +41,15 @@ void processInput(GLFWwindow *window);
 void loadTextureImage(const std::string &path, unsigned int textureID, bool alpha);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+void setWindowFps(GLFWwindow *window, double currentTime);
 
 bool moshing = false, firstMouse = true;
 
 // delta time helps us keep things consistent across system
 float deltaTime = 0.0f, lastFrame = 0.0f;
+// for fps counter
+int frameCount = 0;
+double lastFpsUpdate = 0.0;
 
 // Camera Vars
 float lastX, lastY;
@@ -56,7 +60,7 @@ Camera *camera = player->camera;
 
 // window constants
 constexpr glm::vec3 BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
-constexpr int WINDOW_HEIGHT = 800, WINDOW_WIDTH = 1000;
+constexpr int WINDOW_HEIGHT = 800, WINDOW_WIDTH = 1400;
 bool isFullscreen = false;      // Track fullscreen state
 GLFWmonitor *monitor = nullptr; // Default monitor
 const GLFWvidmode *mode;        // Monitor video mode
@@ -107,6 +111,8 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     // callback for scroll
     glfwSetScrollCallback(window, scroll_callback);
+    // enable vsync - set to 0 to disable, 1 to enable.
+    glfwSwapInterval(1);
 
     // Shader Class. This handles all our shader stuff.
     const Shader ourShader("../shaders/shader.vert", "../shaders/shader.frag");
@@ -160,6 +166,9 @@ int main()
         const float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        // update fps counter
+        setWindowFps(window, currentFrame);
 
         // Background
         if (!moshing)
@@ -347,4 +356,24 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
     camera->ProcessMouseScroll(yoffset);
+}
+
+void setWindowFps(GLFWwindow *win, double currentTime)
+{
+    frameCount++;
+
+    if (currentTime - lastFpsUpdate >= 1.0)
+    {
+        char title[256];
+        title[255] = '\0';
+
+        snprintf(title, 255,
+                 "Swim with Mantas! - [FPS: %3.2f]",
+                 (float)frameCount);
+
+        glfwSetWindowTitle(win, title);
+
+        frameCount = 0;
+        lastFpsUpdate += 1.0;
+    }
 }
