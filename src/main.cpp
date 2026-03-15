@@ -142,7 +142,7 @@ int main()
         new Cube(
             glm::vec3(-50.0f, -1.0f, -50.0f),
             glm::vec3(100.0f, 1.0f, 100.0f),
-            textures),
+            std::vector<Texture>{Texture{textures[0]}}),
     };
 
     /**
@@ -189,27 +189,19 @@ int main()
         ourShader.setMat4("projection", projection);
         ourShader.use();
 
-        // DRAW CALLS
-        if (!Cube::readyToDraw)
-            Cube::bindOptions();
-
         std::vector<glm::vec3> collisions;
 
         // draw each cube
         for (const auto cube : cubes)
         {
-            // bind texture
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, cube->getTextures()[0]);
-
             // bind model
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cube->getPosition());
             model = glm::scale(model, cube->getScale());
             ourShader.setMat4("model", model);
 
-            // draw
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // draw the cube
+            cube->draw();
 
             // check collisions
             glm::vec3 collision = player->AABB->checkCollision(cube->AABB);

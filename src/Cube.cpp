@@ -9,96 +9,81 @@
 #include <GLFW/glfw3.h>
 
 #include "Cube.hpp"
+#include "Mesh.hpp"
 #include "AxisAlignedBoundingBox.hpp"
 
-// vertices for a cube
-//  x, y, z        s, t
-float Cube::vertices[180] = {
-    // positions         // texture coords
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-
-    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-    0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-
-    0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-
-    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-    1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-
-    0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
-
-unsigned int Cube::VAO = 0;
-unsigned int Cube::VBO = 0;
-bool Cube::readyToDraw = false;
-
-/**
- * This binds the VBO, VAO, and EBO so we can draw cubes.
- * Of course we can call this a lot but should probably only call once before we wanna draw
- * any cubes, for performance purposes.
- */
-void Cube::bindOptions()
+// cube vertices as Vertex structs with positions, normals, colors, and texture coords
+std::vector<Vertex> Cube::generateVertices()
 {
-    // VAO
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    const glm::vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
+    return {
+        // +Z
+        {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {0.0f, 0.0f}},
+        {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {1.0f, 0.0f}},
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {0.0f, 1.0f}},
+        {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, white, {0.0f, 0.0f}},
 
-    // VBO
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // -Z
+        {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {0.0f, 0.0f}},
+        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {1.0f, 0.0f}},
+        {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {0.0f, 1.0f}},
+        {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, white, {0.0f, 0.0f}},
 
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void *>(nullptr));
-    glEnableVertexAttribArray(0);
+        // +X
+        {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, white, {0.0f, 0.0f}},
+        {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, white, {1.0f, 0.0f}},
+        {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, white, {0.0f, 1.0f}},
+        {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, white, {0.0f, 0.0f}},
 
-    // texture attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+        // -X
+        {{0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, white, {0.0f, 0.0f}},
+        {{0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, white, {1.0f, 0.0f}},
+        {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, white, {0.0f, 1.0f}},
+        {{0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, white, {0.0f, 0.0f}},
 
-    readyToDraw = true;
+        // +Y
+        {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, white, {0.0f, 0.0f}},
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, white, {1.0f, 0.0f}},
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, white, {0.0f, 0.0f}},
+        {{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, white, {0.0f, 1.0f}},
+
+        // -Y
+        {{0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, white, {0.0f, 0.0f}},
+        {{1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, white, {1.0f, 0.0f}},
+        {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, white, {1.0f, 1.0f}},
+        {{0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, white, {0.0f, 1.0f}},
+        {{0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, white, {0.0f, 0.0f}},
+    };
 }
 
-Cube::Cube(const glm::vec3 position, const glm::vec3 scale, unsigned int textures[])
+Cube::Cube(const glm::vec3 position, const glm::vec3 scale, std::vector<Texture> textures)
 {
     this->position = position;
     this->scale = scale;
-    this->textures = textures;
 
+    this->mesh = new Mesh(generateVertices(), textures);
     this->AABB = new AxisAlignedBoundingBox(
         // max
         position + scale,
         // min
         position);
+}
+
+Cube::~Cube()
+{
+    delete mesh;
+    delete AABB;
 }
 
 glm::vec3 Cube::checkCollision(AxisAlignedBoundingBox *other) const
@@ -116,7 +101,7 @@ glm::vec3 Cube::getScale() const
     return this->scale;
 }
 
-unsigned int *Cube::getTextures() const
+void Cube::draw() const
 {
-    return this->textures;
+    this->mesh->draw();
 }
