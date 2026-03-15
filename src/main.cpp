@@ -52,7 +52,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void setWindowFps(GLFWwindow *window, double currentTime);
 
-bool moshing = false, firstMouse = true, showDebug = false;
+bool moshing = false, firstMouse = true, showDebug = false, showCursor = false;
+float lastToggleTime = 0.0f, debounceTime = 0.2f;
 
 // delta time helps us keep things consistent across system
 float deltaTime = 0.0f, lastFrame = 0.0f;
@@ -132,6 +133,7 @@ int main()
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
@@ -226,6 +228,7 @@ int main()
         const float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        lastToggleTime += deltaTime;
 
         // update fps counter
         setWindowFps(window, currentFrame);
@@ -298,6 +301,14 @@ int main()
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+        // Update and render additional platform windows (multi-viewport)
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(window); // Restore our context
+        }
+
         // check and call events and swap the buffers
         glfwSwapBuffers(window);
         // Check if any events are triggered, like keyboard or mouse
@@ -345,8 +356,22 @@ void processInput(GLFWwindow *window)
     // debug screen
     if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS)
     {
-        showDebug = !showDebug;
-        glfwSetInputMode(window, GLFW_CURSOR, showDebug ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+        if (lastToggleTime >= debounceTime)
+        {
+            showDebug = !showDebug;
+            lastToggleTime = 0.0f;
+        }
+    }
+
+    // toggle cursor
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS)
+    {
+        if (lastToggleTime >= debounceTime)
+        {
+            showCursor = !showCursor;
+            glfwSetInputMode(window, GLFW_CURSOR, showCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+            lastToggleTime = 0.0f;
+        }
     }
 
     // movement
