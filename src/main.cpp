@@ -24,9 +24,13 @@
 #include "Player.hpp"
 #include "AxisAlignedBoundingBox.hpp"
 #include "Cube.hpp"
+#include "Chunk.hpp"
 
 // stb_image for reading in images
 #include "stb_image.hpp"
+
+// noise library
+#include "FastNoiseLite.h"
 
 // GLM is a library for math in OpenGL
 // Installed in msys2 MinGW with this command:
@@ -64,6 +68,9 @@ constexpr int WINDOW_HEIGHT = 800, WINDOW_WIDTH = 1400;
 bool isFullscreen = false;      // Track fullscreen state
 GLFWmonitor *monitor = nullptr; // Default monitor
 const GLFWvidmode *mode;        // Monitor video mode
+
+// noise generation
+FastNoiseLite noise;
 
 int main()
 {
@@ -151,6 +158,34 @@ int main()
             std::vector<Texture>{Texture{textures[0]}}),
     };
 
+    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    noise.SetFrequency(0.01f);
+    noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+    noise.SetFractalOctaves(4);
+
+    Chunk *chunks[] = {
+        new Chunk(
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            std::vector<Texture>{Texture{textures[0]}},
+            &noise),
+        new Chunk(
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            std::vector<Texture>{Texture{textures[0]}},
+            &noise),
+        new Chunk(
+            glm::vec3(0.0f, 0.0f, 1.0f),
+            std::vector<Texture>{Texture{textures[0]}},
+            &noise),
+        new Chunk(
+            glm::vec3(1.0f, 0.0f, 1.0f),
+            std::vector<Texture>{Texture{textures[0]}},
+            &noise)};
+
+    for (auto chunk : chunks)
+    {
+        chunk->generate();
+    }
+
     /**
      * !! IMPORTANT !!
      * This is the render loop. This keeps running until we tell glfw to stop.
@@ -205,14 +240,14 @@ int main()
         // draw each cube
         for (const auto cube : cubes)
         {
-            // bind model
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cube->getPosition());
-            model = glm::scale(model, cube->getScale());
-            ourShader.setMat4("model", model);
+            // // bind model
+            // glm::mat4 model = glm::mat4(1.0f);
+            // model = glm::translate(model, cube->getPosition());
+            // model = glm::scale(model, cube->getScale());
+            // ourShader.setMat4("model", model);
 
-            // draw the cube
-            cube->draw();
+            // // draw the cube
+            // cube->draw();
 
             // check collisions
             glm::vec3 collision = player->AABB->checkCollision(cube->AABB);
@@ -220,6 +255,15 @@ int main()
             {
                 collisions.push_back(collision);
             }
+        }
+
+        // test drawing a chunk
+        for (const auto chunk : chunks)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, chunk->getPosition() * Chunk::CHUNK_SIZE);
+            ourShader.setMat4("model", model);
+            chunk->draw();
         }
 
         // update player's position
