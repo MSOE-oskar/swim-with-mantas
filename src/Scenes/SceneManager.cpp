@@ -40,6 +40,14 @@ void SceneManager::render()
     }
 }
 
+void SceneManager::renderDebug()
+{
+    if (currentScene)
+    {
+        currentScene->renderDebug();
+    }
+}
+
 void SceneManager::cleanup()
 {
     if (currentScene)

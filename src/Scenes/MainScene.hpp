@@ -18,6 +18,7 @@ public:
     void init() override;
     void update(float deltaTime) override;
     void render() override;
+    void renderDebug() override;
     void cleanup() override;
 
     void processInput(GLFWwindow *window, float deltaTime) override;

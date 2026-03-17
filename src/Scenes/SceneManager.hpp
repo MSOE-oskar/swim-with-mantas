@@ -43,6 +43,13 @@ public:
     void render();
 
     /**
+     * @brief Renders debug menus for the current scene.
+     *
+     * Calls the renderDebug method of the current scene to draw any debug overlays or information.
+     */
+    void renderDebug();
+
+    /**
      * @brief Cleans up the scene manager.
      *
      * Calls the cleanup method of the current scene and releases any allocated resources.

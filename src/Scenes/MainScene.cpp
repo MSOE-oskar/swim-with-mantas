@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "imgui/imgui.h"
+
 glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
 
 void MainScene::init()
@@ -125,6 +127,14 @@ void MainScene::render()
         ourShader->setMat4("model", model);
         chunk->draw();
     }
+}
+
+void MainScene::renderDebug()
+{
+    ImGui::Begin("MainScene");
+    ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player->Position.x, player->Position.y, player->Position.z);
+    ImGui::Text("Player Velocity: (%.2f, %.2f, %.2f)", player->CurrentVelocity.x, player->CurrentVelocity.y, player->CurrentVelocity.z);
+    ImGui::End();
 }
 
 void MainScene::cleanup()
