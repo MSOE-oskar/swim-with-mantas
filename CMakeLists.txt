@@ -3,10 +3,10 @@ project(SwimWithMantas)
 
 set(CMAKE_CXX_STANDARD 20)
 
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB LIB_SOURCES "lib/*/*.cpp")
 add_executable(SwimWithMantas ${SOURCES} ${LIB_SOURCES})
-target_include_directories(SwimWithMantas PRIVATE lib)
+target_include_directories(SwimWithMantas PRIVATE lib src)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)

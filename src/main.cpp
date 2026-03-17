@@ -44,15 +44,15 @@
 #include "AxisAlignedBoundingBox.hpp"
 #include "Cube.hpp"
 #include "Chunk.hpp"
+#include "Scenes/SceneManager.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void loadTextureImage(const std::string &path, unsigned int textureID, bool alpha);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void setWindowFps(GLFWwindow *window, double currentTime);
 
-bool moshing = false, firstMouse = true, showDebug = false, showCursor = false;
+bool showDebug = false, showCursor = false;
 float lastToggleTime = 0.0f, debounceTime = 0.2f;
 
 // delta time helps us keep things consistent across system
@@ -61,22 +61,14 @@ float deltaTime = 0.0f, lastFrame = 0.0f;
 int frameCount = 0;
 double lastFpsUpdate = 0.0;
 
-// Camera Vars
-float lastX, lastY;
-
-// Player
-Player *player = new Player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f, 8.0f, 2.0f);
-Camera *camera = player->camera;
-
 // window constants
-constexpr glm::vec3 BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
 constexpr int WINDOW_HEIGHT = 800, WINDOW_WIDTH = 1400;
 bool isFullscreen = false;      // Track fullscreen state
 GLFWmonitor *monitor = nullptr; // Default monitor
 const GLFWvidmode *mode;        // Monitor video mode
 
-// noise generation
-FastNoiseLite noise;
+// scene manager the goat
+SceneManager sceneManager;
 
 int main()
 {
@@ -120,6 +112,8 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // setup things for mouse movement
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // Set scene manager to take the input
+    glfwSetWindowUserPointer(window, &sceneManager);
     // callback for cursor moving
     glfwSetCursorPosCallback(window, mouse_callback);
     // callback for scroll
@@ -139,70 +133,8 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
-    // Shader Class. This handles all our shader stuff.
-    const Shader ourShader("../shaders/shader.vert", "../shaders/shader.frag");
-
-    /**
-     * TEXTURES
-     * Let's create a TEXTURE from an image.
-     */
-    unsigned int textures[1];
-    glGenTextures(1, textures);
-
-    // set texture wrapping and filtering.
-    // The WRAP parameters are for wrapping along the S and T axes. recall that for textures, STPQ = XYZW
-    // the MIN and MAG filters are for when OpenGL wants to increase/decrease the size of the
-    // texture to fit the actual thingy. for min we wanna use mipmaps!
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // this process of binding and manipulating is not something I'm used to...
-    // Very different from OO.
-    loadTextureImage("../textures/sand.png", textures[0], true);
-
-    ourShader.use();
-    ourShader.setInt("sandTexture", 0);
-
-    // enable depth testing so that triangles don't draw over each other in 3D.
-    glEnable(GL_DEPTH_TEST);
-
-    // array to store all our cubes
-    Cube *cubes[] = {
-        new Cube(
-            glm::vec3(-50.0f, -1.0f, -50.0f),
-            glm::vec3(100.0f, 1.0f, 100.0f),
-            std::vector<Texture>{Texture{textures[0]}}),
-    };
-
-    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    noise.SetFrequency(0.01f);
-    noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    noise.SetFractalOctaves(4);
-
-    Chunk *chunks[] = {
-        new Chunk(
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            std::vector<Texture>{Texture{textures[0]}},
-            &noise),
-        new Chunk(
-            glm::vec3(1.0f, 0.0f, 0.0f),
-            std::vector<Texture>{Texture{textures[0]}},
-            &noise),
-        new Chunk(
-            glm::vec3(0.0f, 0.0f, 1.0f),
-            std::vector<Texture>{Texture{textures[0]}},
-            &noise),
-        new Chunk(
-            glm::vec3(1.0f, 0.0f, 1.0f),
-            std::vector<Texture>{Texture{textures[0]}},
-            &noise)};
-
-    for (auto chunk : chunks)
-    {
-        chunk->generate();
-    }
+    // initialize the scene manager and load the first scene
+    sceneManager.init();
 
     /**
      * !! IMPORTANT !!
@@ -212,6 +144,9 @@ int main()
      */
     while (!glfwWindowShouldClose(window))
     {
+        // Check if any events are triggered, like keyboard or mouse
+        glfwPollEvents();
+
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -233,69 +168,11 @@ int main()
         // update fps counter
         setWindowFps(window, currentFrame);
 
-        // Background
-        if (!moshing)
-        {
-            glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
-        glClear(GL_DEPTH_BUFFER_BIT);
+        // render
+        sceneManager.render();
 
-        /**
-         * DRAW COOL SHIT!
-         */
-
-        // manipulate the transformation matrices
-
-        // view matrix - transform the world so that it appears in front of the camera.
-        // basically instead of moving the camera we move the world
-        const glm::mat4 view = camera->GetViewMatrix();
-
-        // projection matrix with perspective
-        // FOV, aspect ratio, near plane, far plane.
-        const glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), static_cast<float>(WINDOW_WIDTH / WINDOW_HEIGHT), 0.01f, 100.0f);
-
-        // send transformation matrices to uniforms.
-        // done each frame since they change a lot.
-        ourShader.setMat4("view", view);
-        ourShader.setMat4("projection", projection);
-        ourShader.setVec3("viewPos", camera->Position);
-        ourShader.setVec3("fogColor", BACKGROUND_COLOR);
-        ourShader.use();
-
-        std::vector<glm::vec3> collisions;
-
-        // draw each cube
-        for (const auto cube : cubes)
-        {
-            // // bind model
-            // glm::mat4 model = glm::mat4(1.0f);
-            // model = glm::translate(model, cube->getPosition());
-            // model = glm::scale(model, cube->getScale());
-            // ourShader.setMat4("model", model);
-
-            // // draw the cube
-            // cube->draw();
-
-            // check collisions
-            glm::vec3 collision = player->AABB->checkCollision(cube->AABB);
-            if (collision.x != 0 || collision.y != 0 || collision.z != 0)
-            {
-                collisions.push_back(collision);
-            }
-        }
-
-        // test drawing a chunk
-        for (const auto chunk : chunks)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, chunk->getPosition() * Chunk::CHUNK_SIZE);
-            ourShader.setMat4("model", model);
-            chunk->draw();
-        }
-
-        // update player's position
-        player->UpdatePlayer(deltaTime, collisions);
+        // update
+        sceneManager.update(deltaTime);
 
         // render ImGui on top of everything else
         ImGui::Render();
@@ -311,8 +188,6 @@ int main()
 
         // check and call events and swap the buffers
         glfwSwapBuffers(window);
-        // Check if any events are triggered, like keyboard or mouse
-        glfwPollEvents();
     }
 
     // cleanup ImGui
@@ -347,12 +222,6 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    // moshing easter egg :)
-    if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS)
-        moshing = true;
-    else
-        moshing = false;
-
     // debug screen
     if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS)
     {
@@ -374,20 +243,6 @@ void processInput(GLFWwindow *window)
         }
     }
 
-    // movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        player->ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        player->ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player->ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player->ProcessKeyboard(RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        player->ProcessKeyboard(UP, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        player->ProcessKeyboard(DOWN, deltaTime);
-
     // toggle fullscreen with F11
     if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
     {
@@ -405,67 +260,21 @@ void processInput(GLFWwindow *window)
         }
         isFullscreen = !isFullscreen; // Toggle the fullscreen state
     }
-}
 
-/**
- * Load a texture from the thing
- * @param path path of the texture
- * @param textureID id to store texture in
- * @param alpha true for pngs, false for jpgs.
- */
-void loadTextureImage(const std::string &path, const unsigned int textureID, const bool alpha)
-{
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    // Load in image with STB_IMAGE what a goat
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, nrChannels; // nrChannels = number of color channels.
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        // Set the image to the currently bound texture! yay!
-        // most of these parameters will stay the same for other textures i got a feeling.
-        // esp if we use STB_IMAGE to load images.
-        if (alpha)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        // creates a mipmap.
-        // Mipmap makes it easier for openGL to sample color from a texture
-        // when it is far away.
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture: " << path << std::endl;
-    }
-    // free the memory from reading the image. we made the texture already.
-    stbi_image_free(data);
+    // pass input to scene manager
+    sceneManager.processInput(window, deltaTime);
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y goes from bottom to top
-    lastX = xpos;
-    lastY = ypos;
-
-    constexpr float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    camera->ProcessMouseMovement(xoffset, yoffset);
+    auto *manager = static_cast<SceneManager *>(glfwGetWindowUserPointer(window));
+    manager->onMouseMove(window, xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    camera->ProcessMouseScroll(yoffset);
+    auto *manager = static_cast<SceneManager *>(glfwGetWindowUserPointer(window));
+    manager->onMouseScroll(window, xoffset, yoffset);
 }
 
 void setWindowFps(GLFWwindow *win, double currentTime)

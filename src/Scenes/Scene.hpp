@@ -1,7 +1,8 @@
-#include <GLFW/glfw3.h>
-
 #ifndef SCENE_H
 #define SCENE_H
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 /**
  * @brief An abstract class representing a scene in the application.
