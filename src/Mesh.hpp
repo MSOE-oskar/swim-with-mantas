@@ -1,6 +1,8 @@
 //
 // Created by sierzegao on 4/5/2025.
 //
+#ifndef MESH_H
+#define MESH_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,9 +10,6 @@
 #include <vector>
 
 #include "Shader.hpp"
-
-#ifndef MESH_H
-#define MESH_H
 
 struct Vertex
 {

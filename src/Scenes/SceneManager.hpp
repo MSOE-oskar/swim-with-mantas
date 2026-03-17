@@ -1,9 +1,11 @@
+//
+// Created by sierzegao on 3/16/2026.
+//
+#ifndef SCREENMANAGER_H
+#define SCREENMANAGER_H
 
 #include <vector>
 #include "Scene.hpp"
-
-#ifndef SCREENMANAGER_H
-#define SCREENMANAGER_H
 
 /**
  * @brief The SceneManager class is responsible for managing different scenes in the application.

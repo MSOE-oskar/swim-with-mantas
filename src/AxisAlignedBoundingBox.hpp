@@ -1,11 +1,11 @@
 //
 // Created by sierzegao on 3/18/2025.
 //
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #ifndef AXISALIGNEDBOUNDINGBOX_H
 #define AXISALIGNEDBOUNDINGBOX_H
+
+#include <glm/glm.hpp>
 
 class AxisAlignedBoundingBox
 {

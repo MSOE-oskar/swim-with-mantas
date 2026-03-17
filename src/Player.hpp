@@ -1,15 +1,15 @@
 //
 // Created by sierzegao on 3/18/2025.
 //
+#ifndef PLAYER_H
+#define PLAYER_H
+
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Camera.hpp"
 #include "AxisAlignedBoundingBox.hpp"
-
-#ifndef PLAYER_H
-#define PLAYER_H
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Player_movement

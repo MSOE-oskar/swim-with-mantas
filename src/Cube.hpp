@@ -1,6 +1,8 @@
 //
 // Created by sierzegao on 3/18/2025.
 //
+#ifndef CUBE_H
+#define CUBE_H
 
 #include <string>
 #include <glm/glm.hpp>
@@ -8,9 +10,6 @@
 
 #include "AxisAlignedBoundingBox.hpp"
 #include "Mesh.hpp"
-
-#ifndef CUBE_H
-#define CUBE_H
 
 class Cube
 {
