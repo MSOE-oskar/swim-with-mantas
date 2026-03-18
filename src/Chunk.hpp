@@ -24,6 +24,12 @@ public:
      *        This is multiplied by the noise value to get the final height of each vertex.
      */
     static float VERTICALITY;
+    /**
+     * @brief The step size for sampling the noise function.
+     *        This determines how many vertices are generated in the chunk.
+     *        Smaller step size means more vertices and smoother terrain, but also more expensive to render.
+     */
+    static float STEP;
 
     /**
      * @brief Creates a new chunk at the given position with the given noise generator.
