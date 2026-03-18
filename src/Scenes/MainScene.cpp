@@ -11,13 +11,35 @@
 
 glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
 
+MainScene::MainScene()
+    : player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f),
+      noise(),
+      ourShader(nullptr),
+      cubes{nullptr},
+      chunks{nullptr}
+{
+}
+
+MainScene::~MainScene()
+{
+    for (const auto cube : cubes)
+    {
+        delete cube;
+    }
+    for (const auto chunk : chunks)
+    {
+        delete chunk;
+    }
+    delete ourShader;
+}
+
 void MainScene::init()
 {
     // Player and camera setup
     player = Player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f);
 
     // Shader
-    ourShader = Shader("../shaders/shader.vert", "../shaders/shader.frag");
+    ourShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
 
     // Texture from image
     glGenTextures(1, textures);
@@ -35,8 +57,8 @@ void MainScene::init()
     // Very different from OO.
     loadTextureImage("../textures/sand.png", textures[0], true);
 
-    ourShader.use();
-    ourShader.setInt("sandTexture", 0);
+    ourShader->use();
+    ourShader->setInt("sandTexture", 0);
 
     // enable depth testing so that triangles don't draw over each other in 3D.
     glEnable(GL_DEPTH_TEST);
@@ -109,11 +131,11 @@ void MainScene::render()
 
     // send transformation matrices to uniforms.
     // done each frame since they change a lot.
-    ourShader.use();
-    ourShader.setMat4("view", view);
-    ourShader.setMat4("projection", projection);
-    ourShader.setVec3("viewPos", player.camera.Position);
-    ourShader.setVec3("fogColor", BACKGROUND_COLOR);
+    ourShader->use();
+    ourShader->setMat4("view", view);
+    ourShader->setMat4("projection", projection);
+    ourShader->setVec3("viewPos", player.camera.Position);
+    ourShader->setVec3("fogColor", BACKGROUND_COLOR);
 
     // draw each cube
     // actually i don't wanna... just want an invisible floor for now.
@@ -123,7 +145,7 @@ void MainScene::render()
     {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, chunk->getPosition() * Chunk::CHUNK_SIZE);
-        ourShader.setMat4("model", model);
+        ourShader->setMat4("model", model);
         chunk->draw();
     }
 }
@@ -146,6 +168,7 @@ void MainScene::cleanup()
     {
         delete chunk;
     }
+    delete ourShader;
 }
 
 void MainScene::processInput(GLFWwindow *window, float deltaTime)

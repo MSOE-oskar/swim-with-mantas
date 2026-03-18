@@ -12,13 +12,11 @@ float Player::MouseSensitivity = 0.1f;
 Player::Player(glm::vec3 initialPos, float movementSpeed)
     : Position(initialPos),
       MovementSpeed(movementSpeed),
-      CurrentVelocity(glm::vec3(0.0f))
+      CurrentVelocity(glm::vec3(0.0f)),
+      camera(initialPos),
+      // this just creates the bounding box to be like 1 bigger than the guy. we should change this.
+      AABB{Position + glm::vec3(0.5f, 0.5f, 0.5f), Position - glm::vec3(0.5f, 0.5f, 0.5f)}
 {
-    this->camera = Camera(Position);
-    // this just creates the bounding box to be like 1 bigger than the guy. we should change this.
-    this->AABB = AxisAlignedBoundingBox(
-        Position + glm::vec3(0.5f, 0.5f, 0.5f),
-        Position - glm::vec3(0.5f, 0.5f, 0.5f));
 }
 
 Player::~Player()

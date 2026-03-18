@@ -13,7 +13,7 @@ public:
     glm::vec3 max;
     glm::vec3 min;
 
-    AxisAlignedBoundingBox(glm::vec3 max = glm::vec3(0), glm::vec3 min = glm::vec3(0)) : max(max), min(min) {}
+    AxisAlignedBoundingBox(glm::vec3 max, glm::vec3 min) : max(max), min(min) {}
 
     /**
      *  @brief Checks if this AABB is colliding with another AABB and returns the collision vector.
