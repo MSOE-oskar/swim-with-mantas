@@ -29,7 +29,16 @@ public:
     void onMouseScroll(GLFWwindow *window, double xoffset, double yoffset) override;
 
 private:
+    // stuff for da shader...
     static glm::vec3 BACKGROUND_COLOR;
+    static glm::vec4 LIGHT_DIRECTION;
+    static glm::vec3 LIGHT_COLOR;
+    static glm::vec3 AMBIENT;
+    static glm::vec3 DIFFUSE;
+    static glm::vec3 SPECULAR;
+    static float SHININESS;
+    static float ABSORPTION_COEF;
+
     Player player;
     FastNoiseLite noise;
 

@@ -9,7 +9,14 @@
 
 #include "imgui/imgui.h"
 
-glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
+glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
+glm::vec4 MainScene::LIGHT_DIRECTION = glm::vec4(0.5f, -0.0f, -0.312f, 0.0f);
+glm::vec3 MainScene::LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 MainScene::AMBIENT = glm::vec3(0.2f, 0.2f, 0.2f);
+glm::vec3 MainScene::DIFFUSE = glm::vec3(0.5f, 0.5f, 0.3f);
+glm::vec3 MainScene::SPECULAR = glm::vec3(0.01f, 0.01f, 0.01f);
+float MainScene::SHININESS = 16.0f;
+float MainScene::ABSORPTION_COEF = 0.03f;
 
 MainScene::MainScene()
     : player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f),
@@ -135,6 +142,14 @@ void MainScene::render()
     ourShader->setMat4("view", view);
     ourShader->setMat4("projection", projection);
     ourShader->setVec3("viewPos", player.camera.Position);
+
+    ourShader->setVec4("light.direction", LIGHT_DIRECTION);
+    ourShader->setVec3("light.color", LIGHT_COLOR);
+    ourShader->setVec3("material.ambient", AMBIENT);
+    ourShader->setVec3("material.diffuse", DIFFUSE);
+    ourShader->setVec3("material.specular", SPECULAR);
+    ourShader->setFloat("material.shininess", SHININESS);
+    ourShader->setFloat("absorptionCoef", ABSORPTION_COEF);
     ourShader->setVec3("fogColor", BACKGROUND_COLOR);
 
     // draw each cube
@@ -155,6 +170,15 @@ void MainScene::renderDebug()
     ImGui::Begin("MainScene");
     ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.Position.x, player.Position.y, player.Position.z);
     ImGui::Text("Player Velocity: (%.2f, %.2f, %.2f)", player.CurrentVelocity.x, player.CurrentVelocity.y, player.CurrentVelocity.z);
+
+    ImGui::SliderFloat3("Light Direction", &LIGHT_DIRECTION.x, -1.0f, 1.0f);
+    ImGui::ColorEdit3("Light Color", &LIGHT_COLOR.x);
+    ImGui::ColorEdit3("Ambient", &AMBIENT.x);
+    ImGui::ColorEdit3("Diffuse", &DIFFUSE.x);
+    ImGui::ColorEdit3("Specular", &SPECULAR.x);
+    ImGui::SliderFloat("Shininess", &SHININESS, 1.0f, 128.0f);
+    ImGui::SliderFloat("Absorption Coef", &ABSORPTION_COEF, 0.0f, 0.05f);
+
     ImGui::End();
 }
 

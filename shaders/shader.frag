@@ -11,15 +11,54 @@ uniform sampler2D sandTexture;
 // using view position for lighting and fog calculations
 uniform vec3 viewPos;
 uniform vec3 fogColor;
+uniform float absorptionCoef;
+
+struct Light {
+    vec4 direction;
+    vec3 color;
+};
+
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
+
+uniform Light light;
+uniform Material material;
 
 void main()
 {
-    vec3 distance = viewPos - FragPos;
-    float distanceLength = length(distance);
-    // simple fog effect based on distance
-    float fogFactor = clamp(1.0 - (distanceLength / 50.0), 0.0, 1.0);
-    // apply fog color based on the fog factor
-    vec3 finalColor = mix(fogColor, texture(sandTexture, TexCoord).rgb, fogFactor);
+    // ambient
+    vec3 ambient = material.ambient * light.color;
 
+    // diffuse
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(-light.direction.xyz);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = light.color * (diff * material.diffuse);
+    
+    // specular
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.color * (spec * material.specular);  
+        
+    vec3 lightingResult = ambient + diffuse + specular;
+
+    vec3 distance = viewPos - FragPos;
+
+    // fog based on distance
+    float distanceLength = length(distance);
+    float fogFactor = clamp(1.0 - (distanceLength / 50.0), 0.0, 1.0);
+    vec3 finalColor = mix(fogColor, texture(sandTexture, TexCoord).rgb * lightingResult, fogFactor);
+
+    // absorb "red light" based on depth
+    float depth = -FragPos.y;
+    float absorption = clamp(exp(-absorptionCoef * depth), 0.0, 1.0);
+    finalColor.r *= absorption;
+    finalColor.g *= (1.1 * absorption);
+    
     FragColor = vec4(finalColor, 1.0);
 }
