@@ -4,39 +4,41 @@
 
 #include "Camera.hpp"
 
+glm::vec3 Camera::getFront() const
+{
+    return Front;
+};
+glm::vec3 Camera::getUp() const
+{
+    return Up;
+};
+glm::vec3 Camera::getRight() const
+{
+    return Right;
+};
+glm::vec3 Camera::getWorldUp() const
+{
+    return WorldUp;
+};
+
+float Camera::getYaw() const
+{
+    return Yaw;
+};
+float Camera::getPitch() const
+{
+    return Pitch;
+};
+void Camera::setEulerAngles(float newYaw, float newPitch)
+{
+    Yaw = newYaw;
+    Pitch = newPitch;
+    updateCameraVectors();
+};
+
 glm::mat4 Camera::GetViewMatrix() const
 {
     return glm::lookAt(Position, Position + Front, Up);
-}
-
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, const GLboolean constrainPitch)
-{
-    xoffset *= MouseSensitivity;
-    yoffset *= MouseSensitivity;
-
-    Yaw += xoffset;
-    Pitch += yoffset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (constrainPitch)
-    {
-        if (Pitch > 89.0f)
-            Pitch = 89.0f;
-        if (Pitch < -89.0f)
-            Pitch = -89.0f;
-    }
-
-    // update Front, Right and Up Vectors using the updated Euler angles
-    updateCameraVectors();
-}
-
-void Camera::ProcessMouseScroll(float yoffset)
-{
-    Zoom -= yoffset;
-    if (Zoom < 1.0f)
-        Zoom = 1.0f;
-    if (Zoom > 90.0f)
-        Zoom = 90.0f;
 }
 
 void Camera::updateCameraVectors()
