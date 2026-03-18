@@ -153,8 +153,6 @@ int main()
         ImGui::NewFrame();
         if (showDebug)
         {
-            // replace with global debug menu later
-            ImGui::ShowDemoWindow();    // Show demo window! :)
             sceneManager.renderDebug(); // Show debug menu for current scene
         }
 

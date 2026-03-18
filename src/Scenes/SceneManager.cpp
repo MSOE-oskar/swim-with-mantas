@@ -3,7 +3,10 @@
 //
 #include "SceneManager.hpp"
 #include "MainScene.hpp"
+#include "WaterScene.hpp"
 #include "Scene.hpp"
+
+#include <imgui/imgui.h>
 
 SceneManager::SceneManager()
 {
@@ -18,10 +21,10 @@ SceneManager::~SceneManager()
 void SceneManager::init()
 {
     // create all scenes and add them to the list
-    // for now we just have one scene, but we can easily add more later
-    currentScene = new MainScene();
+    scenes.push_back(new MainScene());
+    scenes.push_back(new WaterScene());
+    currentScene = scenes[0];
     currentScene->init();
-    scenes.push_back(currentScene);
 }
 
 void SceneManager::update(float deltaTime)
@@ -42,6 +45,27 @@ void SceneManager::render()
 
 void SceneManager::renderDebug()
 {
+    ImGui::Begin("Scene Switcher");
+    // obviously this is terrible but i just wanna see it work lol
+    if (ImGui::Button("Main Scene"))
+    {
+        if (currentScene)
+        {
+            currentScene->cleanup();
+        }
+        currentScene = scenes[0];
+        currentScene->init();
+    }
+    if (ImGui::Button("Water Scene"))
+    {
+        if (currentScene)
+        {
+            currentScene->cleanup();
+        }
+        currentScene = scenes[1];
+        currentScene->init();
+    }
+    ImGui::End();
     if (currentScene)
     {
         currentScene->renderDebug();
