@@ -14,11 +14,10 @@ glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(0.0f, 0.0f, 0.50f);
 void MainScene::init()
 {
     // Player and camera setup
-    player = new Player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f, 8.0f, 2.0f);
-    camera = player->camera;
+    player = Player(glm::vec3(0.0f, 1.0f, 3.0f), 2.0f);
 
     // Shader
-    ourShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
+    ourShader = Shader("../shaders/shader.vert", "../shaders/shader.frag");
 
     // Texture from image
     glGenTextures(1, textures);
@@ -36,8 +35,8 @@ void MainScene::init()
     // Very different from OO.
     loadTextureImage("../textures/sand.png", textures[0], true);
 
-    ourShader->use();
-    ourShader->setInt("sandTexture", 0);
+    ourShader.use();
+    ourShader.setInt("sandTexture", 0);
 
     // enable depth testing so that triangles don't draw over each other in 3D.
     glEnable(GL_DEPTH_TEST);
@@ -82,14 +81,14 @@ void MainScene::update(float deltaTime)
     for (const auto cube : cubes)
     {
         // check collisions
-        glm::vec3 collision = player->AABB->checkCollision(cube->AABB);
+        glm::vec3 collision = player.AABB.checkCollision(cube->AABB);
         if (collision.x != 0 || collision.y != 0 || collision.z != 0)
         {
             collisions.push_back(collision);
         }
     }
 
-    player->UpdatePlayer(deltaTime, collisions);
+    player.UpdatePlayer(deltaTime, collisions);
 }
 
 void MainScene::render()
@@ -100,21 +99,21 @@ void MainScene::render()
 
     // view matrix - transform the world so that it appears in front of the camera.
     // basically instead of moving the camera we move the world
-    const glm::mat4 view = camera->GetViewMatrix();
+    const glm::mat4 view = player.camera.GetViewMatrix();
 
     // projection matrix with perspective
     // FOV, aspect ratio, near plane, far plane.
     int windowWidth, windowHeight;
     glfwGetFramebufferSize(glfwGetCurrentContext(), &windowWidth, &windowHeight);
-    const glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
+    const glm::mat4 projection = glm::perspective(glm::radians(player.camera.Zoom), static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 
     // send transformation matrices to uniforms.
     // done each frame since they change a lot.
-    ourShader->use();
-    ourShader->setMat4("view", view);
-    ourShader->setMat4("projection", projection);
-    ourShader->setVec3("viewPos", camera->Position);
-    ourShader->setVec3("fogColor", BACKGROUND_COLOR);
+    ourShader.use();
+    ourShader.setMat4("view", view);
+    ourShader.setMat4("projection", projection);
+    ourShader.setVec3("viewPos", player.camera.Position);
+    ourShader.setVec3("fogColor", BACKGROUND_COLOR);
 
     // draw each cube
     // actually i don't wanna... just want an invisible floor for now.
@@ -124,7 +123,7 @@ void MainScene::render()
     {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, chunk->getPosition() * Chunk::CHUNK_SIZE);
-        ourShader->setMat4("model", model);
+        ourShader.setMat4("model", model);
         chunk->draw();
     }
 }
@@ -132,8 +131,8 @@ void MainScene::render()
 void MainScene::renderDebug()
 {
     ImGui::Begin("MainScene");
-    ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player->Position.x, player->Position.y, player->Position.z);
-    ImGui::Text("Player Velocity: (%.2f, %.2f, %.2f)", player->CurrentVelocity.x, player->CurrentVelocity.y, player->CurrentVelocity.z);
+    ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.Position.x, player.Position.y, player.Position.z);
+    ImGui::Text("Player Velocity: (%.2f, %.2f, %.2f)", player.CurrentVelocity.x, player.CurrentVelocity.y, player.CurrentVelocity.z);
     ImGui::End();
 }
 
@@ -152,41 +151,25 @@ void MainScene::cleanup()
 void MainScene::processInput(GLFWwindow *window, float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        player->ProcessKeyboard(FORWARD, deltaTime);
+        player.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        player->ProcessKeyboard(BACKWARD, deltaTime);
+        player.ProcessKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player->ProcessKeyboard(LEFT, deltaTime);
+        player.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player->ProcessKeyboard(RIGHT, deltaTime);
+        player.ProcessKeyboard(RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        player->ProcessKeyboard(UP, deltaTime);
+        player.ProcessKeyboard(UP, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        player->ProcessKeyboard(DOWN, deltaTime);
+        player.ProcessKeyboard(DOWN, deltaTime);
 }
 
 void MainScene::onMouseMove(GLFWwindow *window, double xpos, double ypos)
 {
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y goes from bottom to top
-    lastX = xpos;
-    lastY = ypos;
-
-    constexpr float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    camera->ProcessMouseMovement(xoffset, yoffset);
+    player.ProcessMouseMovement(xpos, ypos);
 }
 
 void MainScene::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
 {
-    camera->ProcessMouseScroll(yoffset);
+    player.ProcessMouseScroll(yoffset);
 }

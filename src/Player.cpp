@@ -7,13 +7,30 @@
 #include "Player.hpp"
 
 float Player::GRAVITY = 1.0f;
+float Player::MouseSensitivity = 0.1f;
+
+Player::Player(glm::vec3 initialPos, float movementSpeed)
+    : Position(initialPos),
+      MovementSpeed(movementSpeed),
+      CurrentVelocity(glm::vec3(0.0f))
+{
+    this->camera = Camera(Position);
+    // this just creates the bounding box to be like 1 bigger than the guy. we should change this.
+    this->AABB = AxisAlignedBoundingBox(
+        Position + glm::vec3(0.5f, 0.5f, 0.5f),
+        Position - glm::vec3(0.5f, 0.5f, 0.5f));
+}
+
+Player::~Player()
+{
+}
 
 void Player::ProcessKeyboard(const Player_movement direction, const float deltaTime)
 {
-    glm::vec3 Front = camera->Front;
+    glm::vec3 Front = camera.getFront();
     glm::vec3 Forward = glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
-    glm::vec3 Right = camera->Right;
-    glm::vec3 Up = camera->WorldUp;
+    glm::vec3 Right = camera.getRight();
+    glm::vec3 Up = camera.getWorldUp();
 
     glm::vec3 acceleration = glm::vec3(0.0f);
 
@@ -31,6 +48,47 @@ void Player::ProcessKeyboard(const Player_movement direction, const float deltaT
         acceleration -= Up;
 
     CurrentVelocity += acceleration * 5.0f * deltaTime;
+}
+
+void Player::ProcessMouseMovement(float xpos, float ypos, const GLboolean constrainPitch)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y goes from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
+    xoffset *= MouseSensitivity;
+    yoffset *= MouseSensitivity;
+
+    float newPitch = camera.getPitch() + yoffset;
+    float newYaw = camera.getYaw() + xoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (constrainPitch)
+    {
+        if (newPitch > 89.0f)
+            newPitch = 89.0f;
+        if (newPitch < -89.0f)
+            newPitch = -89.0f;
+    }
+
+    camera.setEulerAngles(newYaw, newPitch);
+}
+
+void Player::ProcessMouseScroll(float yoffset)
+{
+    camera.Zoom -= yoffset;
+    if (camera.Zoom < 1.0f)
+        camera.Zoom = 1.0f;
+    if (camera.Zoom > 90.0f)
+        camera.Zoom = 90.0f;
 }
 
 void Player::UpdatePlayer(const float deltaTime, const std::vector<glm::vec3> &collisions)
@@ -83,13 +141,13 @@ void Player::UpdatePlayer(const float deltaTime, const std::vector<glm::vec3> &c
     glm::vec3 newPosition = Position + CurrentVelocity * deltaTime;
 
     Position = newPosition;
-    camera->Position = Position;
+    camera.Position = Position;
     // this seems bad to update the max and min individually.
     // we should have calcuations to update this automatically
     // based on the size and position of the thing.
     // just for now..
-    AABB->max = Position + glm::vec3(0.5f, 0.5f, 0.5f);
-    AABB->min = Position - glm::vec3(0.5f, 0.5f, 0.5f);
+    AABB.max = Position + glm::vec3(0.5f, 0.5f, 0.5f);
+    AABB.min = Position - glm::vec3(0.5f, 0.5f, 0.5f);
 
     CurrentVelocity.y -= GRAVITY * deltaTime;
 }

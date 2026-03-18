@@ -28,36 +28,34 @@ public:
     glm::vec3 Position;
     glm::vec3 CurrentVelocity;
 
-    Camera *camera;
-    AxisAlignedBoundingBox *AABB;
+    Camera camera;
+    AxisAlignedBoundingBox AABB;
 
     float CurrentSpeed;
     float MovementSpeed; // speed we move at
 
-    Player(glm::vec3 initialPos, float movementSpeed, float sprintSpeed, float jumpHeight)
-        : Position(initialPos),
-          MovementSpeed(movementSpeed),
-          CurrentVelocity(glm::vec3(0.0f))
-    {
-        this->camera = new Camera(initialPos);
-        // this just creates the bounding box to be like 1 bigger than the guy. we should change this.
-        this->AABB = new AxisAlignedBoundingBox(
-            initialPos + glm::vec3(0.5f, 0.5f, 0.5f),
-            initialPos - glm::vec3(0.5f, 0.5f, 0.5f));
-    }
-
-    ~Player()
-    {
-        delete camera;
-        delete AABB;
-    }
+    Player(glm::vec3 initialPos = glm::vec3(0.0f), float movementSpeed = 2.5f);
+    ~Player();
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(const Player_movement direction, const float deltaTime);
+
+    // processes input received from a mouse input system.
+    // Expects the xpos and ypos of the mouse.
+    void ProcessMouseMovement(float xpos, float ypos, const GLboolean constrainPitch = true);
+
+    // processes input received from a mouse scroll-wheel event.
+    // Only requires input on the vertical wheel-axis
+    void ProcessMouseScroll(float yoffset);
 
     void UpdatePlayer(const float deltaTime, const std::vector<glm::vec3> &collisions);
 
 private:
     static float GRAVITY;
+    static float MouseSensitivity;
+
+    // for mouse movement
+    float lastX, lastY;
+    bool firstMouse = true;
 };
 #endif // PLAYER_H

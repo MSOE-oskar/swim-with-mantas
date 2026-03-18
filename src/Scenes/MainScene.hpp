@@ -27,10 +27,9 @@ public:
 
 private:
     static glm::vec3 BACKGROUND_COLOR;
-    Player *player;
-    Camera *camera;
+    Player player;
     FastNoiseLite noise;
-    Shader *ourShader;
+    Shader ourShader;
     unsigned int textures[1];
     Cube *cubes[1];
     Chunk *chunks[4];
