@@ -169,6 +169,11 @@ void MainScene::cleanup()
         delete chunk;
     }
     delete ourShader;
+    // TODO: loading and deleting textures on every scene load is really wasteful.
+    // We should probably have a texture manager and maybe shader manager too?
+    // For now since we only have one tiny texture it's not a big deal but this is not scalable at all.
+    // teehee :P
+    glDeleteTextures(1, textures);
 }
 
 void MainScene::processInput(GLFWwindow *window, float deltaTime)

@@ -195,6 +195,9 @@ int main()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
+    // cleanup the scene manager
+    sceneManager.cleanup();
+
     // Just like glfwInit, we need to call this when we are done with GLFW.
     glfwTerminate();
     return 0;

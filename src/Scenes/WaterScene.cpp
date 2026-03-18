@@ -15,6 +15,9 @@ WaterScene::WaterScene()
 
 WaterScene::~WaterScene()
 {
+    delete waterShader;
+    delete cube;
+    glDeleteTextures(1, textures);
 }
 
 void WaterScene::init()
@@ -82,6 +85,10 @@ void WaterScene::cleanup()
 {
     delete waterShader;
     delete cube;
+    // TODO: loading and deleting textures on every scene load is really wasteful.
+    // We should probably have a texture manager and maybe shader manager too?
+    // For now since we only have one tiny texture it's not a big deal but this is not scalable at all.
+    // teehee :P
     glDeleteTextures(1, textures);
 }
 
