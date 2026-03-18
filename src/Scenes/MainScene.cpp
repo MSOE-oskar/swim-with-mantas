@@ -72,7 +72,7 @@ void MainScene::init()
 
     // array to store all our cubes
     cubes[0] = new Cube(
-        glm::vec3(-50.0f, -1.0f, -50.0f),
+        glm::vec3(-50.0f, -20.0f, -50.0f),
         glm::vec3(100.0f, 1.0f, 100.0f),
         std::vector<Texture>{Texture{textures[0]}});
 
