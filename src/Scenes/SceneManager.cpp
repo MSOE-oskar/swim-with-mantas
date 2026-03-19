@@ -23,7 +23,7 @@ void SceneManager::init()
     // create all scenes and add them to the list
     scenes.push_back(new MainScene());
     scenes.push_back(new WaterScene());
-    currentScene = scenes[0];
+    currentScene = scenes[1];
     currentScene->init();
 }
 

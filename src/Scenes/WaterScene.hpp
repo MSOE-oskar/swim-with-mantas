@@ -7,7 +7,7 @@
 #include "Scene.hpp"
 #include "FreeCam.hpp"
 #include "Shader.hpp"
-#include "Cube.hpp"
+#include "Mesh.hpp"
 
 class WaterScene : public Scene
 {
@@ -27,11 +27,26 @@ public:
 
 private:
     static glm::vec3 BACKGROUND_COLOR;
+    // water uniforms
+    static float WATER_HEIGHT;
+    static int OCTAVES;
+    static float AMPLITUDE[8];
+    static float WAVELENGTH[8];
+    static float SPEED[8];
+    static glm::vec2 DIRECTION[8];
+    // light uniforms
+    static glm::vec4 LIGHT_DIRECTION;
+    static glm::vec3 LIGHT_COLOR;
+    static glm::vec3 AMBIENT;
+    static glm::vec3 DIFFUSE;
+    static glm::vec3 SPECULAR;
+    static float SHININESS;
+
     Shader *waterShader;
     unsigned int textures[1];
     FreeCam freeCam;
 
-    Cube *cube;
+    Mesh *waterMesh;
 };
 
 #endif // WATERSCENE_H
