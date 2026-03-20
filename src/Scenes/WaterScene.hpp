@@ -8,6 +8,7 @@
 #include "FreeCam.hpp"
 #include "Shader.hpp"
 #include "Mesh.hpp"
+#include "Cube.hpp"
 
 class WaterScene : public Scene
 {
@@ -43,10 +44,12 @@ private:
     static float SHININESS;
 
     Shader *waterShader;
+    Shader *cubeShader;
     unsigned int textures[1];
     FreeCam freeCam;
 
     Mesh *waterMesh;
+    Cube *cube;
 };
 
 #endif // WATERSCENE_H

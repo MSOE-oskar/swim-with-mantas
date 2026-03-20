@@ -4,22 +4,23 @@
 #include "WaterScene.hpp"
 #include "Helpers/loadTextureImage.hpp"
 #include "Player.hpp"
+#include "imgui/imgui.h"
 
 glm::vec3 WaterScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
 float WaterScene::WATER_HEIGHT = 0.0f;
-int WaterScene::OCTAVES = 8;
-float WaterScene::AMPLITUDE[8] = {0.16f, 0.16f, 0.07f, 0.05f, 0.03f, 0.022f, 0.010f, 0.009f};
-float WaterScene::WAVELENGTH[8] = {19 / 3.0f, 17 / 3.0f, 13 / 3.0f, 11 / 3.0f, 7 / 3.0f, 11 / 3.0f, 13 / 3.0f, 17 / 3.0f};
-float WaterScene::SPEED[8] = {0.25f * 3.0f, 0.198f * 3.0f, 0.368f * 3.0f, 0.225f * 3.0f, 0.097f * 3.0f, 0.074f * 3.0f, 0.056f * 3.0f, 0.040f * 3.0f};
+int WaterScene::OCTAVES = 4;
+float WaterScene::AMPLITUDE[8] = {0.221f, 0.345f, 0.362f, 0.497f, 0.0265f, 0.0085f, 0.0f, 0.0f};
+float WaterScene::WAVELENGTH[8] = {0.100f, 2.0f, 1.660f, 0.990f, 2.0f, 0.0f, 0.0f};
+float WaterScene::SPEED[8] = {0.295f, 1.071f, 1.096f, 1.006f, 0.0f, 0.0f, 0.0f, 0.0f};
 glm::vec2 WaterScene::DIRECTION[8] = {
-    glm::vec2(1.0f, 0.0f),    // dominant swell
-    glm::vec2(0.25f, 0.50f),  // slight spread
-    glm::vec2(0.76f, -0.38f), // opposite spread
-    glm::vec2(0.95f, 0.60f),  // medium spread
-    glm::vec2(-0.31f, 0.95f), // cross-wave
-    glm::vec2(0.60f, -0.80f), // cross-wave
-    glm::vec2(-0.47f, 0.74f), // scattered ripple
-    glm::vec2(0.82f, 0.42f)}; // scattered ripple
+    glm::vec2(0.094f, 0.046f),
+    glm::vec2(-0.219f, -0.077f),
+    glm::vec2(1.0f, -0.508f),
+    glm::vec2(-1.00f, 0.938f),
+    glm::vec2(-0.31f, 0.95f),
+    glm::vec2(0.60f, -0.80f),
+    glm::vec2(-0.47f, 0.74f),
+    glm::vec2(0.82f, 0.42f)};
 
 glm::vec4 WaterScene::LIGHT_DIRECTION = glm::vec4(-0.5f, -0.0f, -0.312f, 0.0f);
 glm::vec3 WaterScene::LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -38,13 +39,13 @@ WaterScene::~WaterScene()
 {
     delete waterShader;
     delete waterMesh;
+    delete cube;
     glDeleteTextures(1, textures);
 }
 
 void WaterScene::init()
 {
     freeCam = FreeCam(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-    waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
 
     glGenTextures(1, textures);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -52,18 +53,20 @@ void WaterScene::init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    loadTextureImage("../textures/water.png", textures[0], true);
+    loadTextureImage("../textures/sand.png", textures[0], true);
 
+    waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
     waterShader->use();
     waterShader->setInt("waterTexture", 0);
+
+    cubeShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
+    cubeShader->use();
+    cubeShader->setInt("sandTexture", 0);
 
     // enable depth testing so that triangles don't draw over each other in 3D.
     glEnable(GL_DEPTH_TEST);
 
     // enable blending for transparency in water
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     waterMesh = new Mesh();
 
@@ -109,6 +112,11 @@ void WaterScene::init()
     }
 
     waterMesh->recreateVBO();
+
+    cube = new Cube(
+        glm::vec3(5.0f, -2.5f, 5.0f),
+        glm::vec3(2.0f, 5.0f, 2.0f),
+        std::vector<Texture>{Texture{textures[0]}});
 }
 
 void WaterScene::update(float deltaTime)
@@ -118,6 +126,8 @@ void WaterScene::update(float deltaTime)
 
 void WaterScene::render()
 {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // bg
     glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -157,17 +167,51 @@ void WaterScene::render()
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     waterShader->setMat4("model", model);
     waterMesh->draw();
+
+    cubeShader->use();
+    cubeShader->setMat4("view", view);
+    cubeShader->setMat4("projection", projection);
+    cubeShader->setVec3("viewPos", freeCam.camera.Position);
+    cubeShader->setVec4("light.direction", LIGHT_DIRECTION);
+    cubeShader->setVec3("fogColor", BACKGROUND_COLOR);
+    cubeShader->setVec3("light.color", LIGHT_COLOR);
+    cubeShader->setVec3("material.ambient", AMBIENT);
+    cubeShader->setVec3("material.diffuse", DIFFUSE);
+    cubeShader->setVec3("material.specular", SPECULAR);
+    cubeShader->setFloat("material.shininess", SHININESS);
+
+    // cube
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, cube->getPosition());
+    model = glm::scale(model, cube->getScale());
+    cubeShader->setMat4("model", model);
+    cube->draw();
 }
 
 void WaterScene::renderDebug()
 {
-    // no debug rendering needed for now
+    ImGui::Begin("WaterScene");
+    ImGui::SliderFloat("Water Height", &WATER_HEIGHT, -1.0f, 1.0f);
+    ImGui::SliderInt("Octaves", &OCTAVES, 1, 8);
+    for (int i = 0; i < OCTAVES; ++i)
+    {
+        ImGui::PushID(i);
+        ImGui::Text("Octave %d", i + 1);
+        ImGui::SliderFloat("Amplitude", &AMPLITUDE[i], 0.0f, 1.0f);
+        ImGui::SliderFloat("Wavelength", &WAVELENGTH[i], 0.1f, 50.0f);
+        ImGui::SliderFloat("Speed", &SPEED[i], 0.0f, 5.0f);
+        ImGui::SliderFloat2("Direction", &DIRECTION[i].x, -1.0f, 1.0f);
+        ImGui::PopID();
+    }
+    ImGui::End();
 }
 
 void WaterScene::cleanup()
 {
     delete waterShader;
     delete waterMesh;
+    delete cube;
+
     // TODO: loading and deleting textures on every scene load is really wasteful.
     // We should probably have a texture manager and maybe shader manager too?
     // For now since we only have one tiny texture it's not a big deal but this is not scalable at all.
