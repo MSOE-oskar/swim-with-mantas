@@ -12,6 +12,7 @@ uniform mat4 projection;
 uniform float waterHeight;
 uniform float time;
 uniform int octaves;
+uniform float steepness[8];
 uniform float amplitude[8];
 uniform float wavelength[8];
 uniform float speed[8];
@@ -27,7 +28,7 @@ out vec2 TexCoord;
 const float pi = 3.14159;
 
 vec3 gerstnerWave(vec3 vertex, vec2 p_direction, float p_speed, float p_steepness, float p_amplitude, float p_wavelength){
-    	float displaced_x = vertex.x + (p_steepness/p_wavelength) * p_direction.x * cos(p_wavelength * dot(p_direction, vertex.xz) + p_speed * time);
+    float displaced_x = vertex.x + (p_steepness/p_wavelength) * p_direction.x * cos(p_wavelength * dot(p_direction, vertex.xz) + p_speed * time);
 	float displaced_z = vertex.z + (p_steepness/p_wavelength) * p_direction.y * cos(p_wavelength * dot(p_direction, vertex.xz) + p_speed * time);
 	float displaced_y = vertex.y + p_amplitude * sin(p_wavelength * dot(p_direction, vertex.xz) + p_speed * time);
 	return vec3(displaced_x, displaced_y, displaced_z);
@@ -37,12 +38,19 @@ vec3 gerstnerWave(vec3 vertex, vec2 p_direction, float p_speed, float p_steepnes
 vec3 gerstner(vec3 vertex) {
     vec3 result = waterHeight * vec3(0.0, 1.0, 0.0);
     for(int i = 0; i < octaves; ++i) {
-        result += gerstnerWave(vertex, direction[i], speed[i], 1.0, amplitude[i], wavelength[i]);
+        result += gerstnerWave(
+            vertex, 
+            normalize(direction[i]), 
+            speed[i], 
+            steepness[i], 
+            amplitude[i], 
+            wavelength[i]
+            );
     }
     return result;
 }
 
-vec3 gerstner_normal(vec3 vertex, vec2 direction, float time, float speed, float steepness, float amplitude, float wavelength) {
+vec3 gerstner_normal(vec3 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength) {
     float cosfactor = cos(wavelength * dot(direction, vertex.xz + speed * time));
 	float sinfactor = sin(wavelength * dot(direction, vertex.xz + speed * time));
 	float x_normal = -direction.x * wavelength * amplitude * cosfactor;
@@ -52,9 +60,16 @@ vec3 gerstner_normal(vec3 vertex, vec2 direction, float time, float speed, float
 }
 
 vec3 waveNormal(vec3 vertex) {
-    vec3 result = vec3(0.0, 1.0, 0.0);
+    vec3 result = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < octaves; ++i) {
-        result += gerstner_normal(vertex, direction[i], time, speed[i], 1.0, amplitude[i], wavelength[i]);
+        result += gerstner_normal(
+            vertex, 
+            normalize(direction[i]), 
+            speed[i], 
+            steepness[i], 
+            amplitude[i], 
+            wavelength[i]
+            );
     }
     return normalize(result);
 }

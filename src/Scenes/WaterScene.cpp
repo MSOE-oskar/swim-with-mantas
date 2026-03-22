@@ -9,6 +9,7 @@
 glm::vec3 WaterScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
 float WaterScene::WATER_HEIGHT = 0.0f;
 int WaterScene::OCTAVES = 4;
+float WaterScene::STEEPNESS[8] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 float WaterScene::AMPLITUDE[8] = {0.221f, 0.345f, 0.362f, 0.497f, 0.0265f, 0.0085f, 0.0f, 0.0f};
 float WaterScene::WAVELENGTH[8] = {0.100f, 2.0f, 1.660f, 0.990f, 2.0f, 0.0f, 0.0f};
 float WaterScene::SPEED[8] = {0.295f, 1.071f, 1.096f, 1.006f, 0.0f, 0.0f, 0.0f, 0.0f};
@@ -166,13 +167,11 @@ void WaterScene::render()
     waterShader->setFloat("waterHeight", WATER_HEIGHT);
     waterShader->setFloat("time", static_cast<float>(glfwGetTime()));
     waterShader->setInt("octaves", OCTAVES);
-    for (int i = 0; i < OCTAVES; ++i)
-    {
-        waterShader->setFloat("amplitude[" + std::to_string(i) + "]", AMPLITUDE[i]);
-        waterShader->setFloat("wavelength[" + std::to_string(i) + "]", WAVELENGTH[i]);
-        waterShader->setFloat("speed[" + std::to_string(i) + "]", SPEED[i]);
-        waterShader->setVec2("direction[" + std::to_string(i) + "]", DIRECTION[i]);
-    }
+    waterShader->setFloatArray("steepness", OCTAVES, STEEPNESS);
+    waterShader->setFloatArray("amplitude", OCTAVES, AMPLITUDE);
+    waterShader->setFloatArray("wavelength", OCTAVES, WAVELENGTH);
+    waterShader->setFloatArray("speed", OCTAVES, SPEED);
+    waterShader->setVec2Array("direction", OCTAVES, DIRECTION);
 
     waterShader->setVec4("light.direction", LIGHT_DIRECTION);
     waterShader->setVec3("light.color", LIGHT_COLOR);
@@ -200,6 +199,7 @@ void WaterScene::renderDebug()
         ImGui::SliderFloat("Amplitude", &AMPLITUDE[i], 0.0f, 1.0f);
         ImGui::SliderFloat("Wavelength", &WAVELENGTH[i], 0.1f, 50.0f);
         ImGui::SliderFloat("Speed", &SPEED[i], 0.0f, 5.0f);
+        ImGui::SliderFloat("Steepness", &STEEPNESS[i], 0.0f, 1.0f);
         ImGui::SliderFloat2("Direction", &DIRECTION[i].x, -1.0f, 1.0f);
         ImGui::PopID();
     }

@@ -31,6 +31,7 @@ private:
     // water uniforms
     static float WATER_HEIGHT;
     static int OCTAVES;
+    static float STEEPNESS[8];
     static float AMPLITUDE[8];
     static float WAVELENGTH[8];
     static float SPEED[8];
