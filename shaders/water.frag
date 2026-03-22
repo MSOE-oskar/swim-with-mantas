@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec3 Normal;
+in mat3 TBN;
 in vec4 Color;
 in vec3 FragPos;
 in vec2 TexCoord;
@@ -30,7 +30,7 @@ void main()
     vec3 ambient = light.color * material.ambient;
   	
     // diffuse 
-    vec3 norm = normalize(Normal);
+    vec3 norm = normalize(TBN[2]); // Normal vector from TBN matrix
     vec3 lightDir = normalize(-light.direction.xyz);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.color * (diff * material.diffuse);

@@ -19,7 +19,7 @@ uniform float speed[8];
 uniform vec2 direction[8];
 
 out vec3 FragPos;
-out vec3 Normal;
+out mat3 TBN;
 out vec4 Color;
 out vec2 TexCoord;
 
@@ -53,31 +53,37 @@ vec4 gerstner(vec4 vertex) {
     return result;
 }
 
-vec3 gerstnerNormal(vec3 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength) {
-    float frequency = 2.0 / wavelength;
-    float cosFactor = cos(frequency * dot(direction, vertex.xz) + speed * time);
-	float sinFactor = sin(frequency * dot(direction, vertex.xz) + speed * time);
-	float xNormal = direction.x * frequency * amplitude * cosFactor;
-	float zNormal = direction.y * frequency * amplitude * cosFactor;
-	float yNormal = (steepness/frequency) * frequency * amplitude * sinFactor;
-	return vec3(xNormal, yNormal, zNormal);
+vec3 gerstnerTangent(float cosFactor, float sinFactor, vec2 direction, float speed, float steepness, float amplitude, float frequency) {
+    // GPUGems 1, Chapter 1, Equation 11
+    float xTangent = steepness * direction.x * direction.y * frequency * amplitude * sinFactor;
+    float zTangent = steepness * direction.y * direction.y * frequency * amplitude * sinFactor;
+    float yTangent = direction.y * frequency * amplitude * cosFactor;
+    return vec3(xTangent, yTangent, zTangent);
 }
 
-vec3 waveNormal(vec3 vertex) {
-    vec3 result = vec3(0.0);
-    // GPUGems 1, Chapter 1, Equation 12
+vec3 gerstnerBitangent(float cosFactor, float sinFactor, vec2 direction, float speed, float steepness, float amplitude, float frequency) {
+    // GPUGems 1, Chapter 1, Equation 10
+    float xBitangent = steepness * direction.x * direction.x * frequency * amplitude * sinFactor;
+    float zBitangent = steepness * direction.x * direction.y * frequency * amplitude * sinFactor;
+    float yBitangent = direction.x * frequency * amplitude * cosFactor;
+    return vec3(xBitangent, yBitangent, zBitangent);
+}
+
+mat3 waveTBN(vec3 vertex) {
+    vec3 T = vec3(0.0, 0.0, 0.0);
+    vec3 B = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < octaves; ++i) {
-        result += gerstnerNormal(
-            vertex, 
-            normalize(direction[i]), 
-            speed[i], 
-            steepness[i], 
-            amplitude[i], 
-            wavelength[i]
-            );
+        float frequency = 2.0 / wavelength[i];
+        float factorInnards = frequency * dot(normalize(direction[i]), vertex.xz) + speed[i] * time;
+        float cosFactor = cos(factorInnards);
+        float sinFactor = sin(factorInnards);
+        T += gerstnerTangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
+        B += gerstnerBitangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
     }
-    result = vec3(-result.x, 1.0 - result.y, -result.z);
-    return normalize(result);
+    T = vec3(-T.x, T.y, 1 - T.z);
+    B = vec3(1 - B.x, B.y, -B.z);
+    vec3 N = cross(T, B);
+    return mat3(T, B, N);
 }
 
 void main()
@@ -89,7 +95,7 @@ void main()
     gl_Position = projection * view * worldPos;
 
     FragPos = vec3(worldPos);
-    Normal = waveNormal(vec3(worldPos));
+    TBN = waveTBN(vec3(worldPos));
     Color = aColor;
     TexCoord = aTexCoord;
 }
