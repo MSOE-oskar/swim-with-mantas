@@ -31,11 +31,11 @@ private:
     // water uniforms
     static float WATER_HEIGHT;
     static int OCTAVES;
-    static float STEEPNESS[8];
-    static float AMPLITUDE[8];
-    static float WAVELENGTH[8];
-    static float SPEED[8];
-    static glm::vec2 DIRECTION[8];
+    static float STEEPNESS[4];
+    static float AMPLITUDE[4];
+    static float WAVELENGTH[4];
+    static float SPEED[4];
+    static glm::vec2 DIRECTION[4];
     // light uniforms
     static glm::vec4 LIGHT_DIRECTION;
     static glm::vec3 LIGHT_COLOR;

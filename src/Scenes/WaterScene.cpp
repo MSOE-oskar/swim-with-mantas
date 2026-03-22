@@ -9,19 +9,15 @@
 glm::vec3 WaterScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
 float WaterScene::WATER_HEIGHT = 0.0f;
 int WaterScene::OCTAVES = 4;
-float WaterScene::STEEPNESS[8] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-float WaterScene::AMPLITUDE[8] = {0.221f, 0.345f, 0.362f, 0.497f, 0.0265f, 0.0085f, 0.0f, 0.0f};
-float WaterScene::WAVELENGTH[8] = {0.100f, 2.0f, 1.660f, 0.990f, 2.0f, 0.0f, 0.0f};
-float WaterScene::SPEED[8] = {0.295f, 1.071f, 1.096f, 1.006f, 0.0f, 0.0f, 0.0f, 0.0f};
-glm::vec2 WaterScene::DIRECTION[8] = {
+float WaterScene::STEEPNESS[4] = {0.970f, 0.941f, 0.274f, 0.405f};
+float WaterScene::AMPLITUDE[4] = {0.675f, 0.350f, 0.418f, 0.329f};
+float WaterScene::WAVELENGTH[4] = {8.561f, 11.393f, 8.975f, 7.321f};
+float WaterScene::SPEED[4] = {0.506f, 1.055f, 1.857f, 2.215f};
+glm::vec2 WaterScene::DIRECTION[4] = {
     glm::vec2(0.094f, 0.046f),
-    glm::vec2(-0.219f, -0.077f),
-    glm::vec2(1.0f, -0.508f),
-    glm::vec2(-1.00f, 0.938f),
-    glm::vec2(-0.31f, 0.95f),
-    glm::vec2(0.60f, -0.80f),
-    glm::vec2(-0.47f, 0.74f),
-    glm::vec2(0.82f, 0.42f)};
+    glm::vec2(-0.074f, 0.106f),
+    glm::vec2(-0.185f, -0.380f),
+    glm::vec2(0.444f, -0.266f)};
 
 glm::vec4 WaterScene::LIGHT_DIRECTION = glm::vec4(-0.5f, -0.0f, -0.312f, 0.0f);
 glm::vec3 WaterScene::LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -71,8 +67,8 @@ void WaterScene::init()
 
     waterMesh = new Mesh();
 
-    const float CHUNK_SIZE = 16.0f;
-    const float STEP = 0.1f;
+    const float CHUNK_SIZE = 50.0f;
+    const float STEP = 0.5f;
     const glm::vec4 color = glm::vec4(0.0f, 0.5f, 1.0f, 0.5f);
 
     // generate water mesh... just a blanket
