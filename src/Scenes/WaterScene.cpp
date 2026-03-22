@@ -197,7 +197,7 @@ void WaterScene::renderDebug()
         ImGui::PushID(i);
         ImGui::Text("Octave %d", i + 1);
         ImGui::SliderFloat("Amplitude", &AMPLITUDE[i], 0.0f, 1.0f);
-        ImGui::SliderFloat("Wavelength", &WAVELENGTH[i], 0.1f, 50.0f);
+        ImGui::SliderFloat("Wavelength", &WAVELENGTH[i], 1.0f, 15.0f);
         ImGui::SliderFloat("Speed", &SPEED[i], 0.0f, 5.0f);
         ImGui::SliderFloat("Steepness", &STEEPNESS[i], 0.0f, 1.0f);
         ImGui::SliderFloat2("Direction", &DIRECTION[i].x, -1.0f, 1.0f);
