@@ -138,6 +138,25 @@ void WaterScene::render()
     const glm::mat4 view = freeCam.camera.GetViewMatrix();
     const glm::mat4 projection = glm::perspective(glm::radians(freeCam.camera.Zoom), static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 
+    cubeShader->use();
+    cubeShader->setMat4("view", view);
+    cubeShader->setMat4("projection", projection);
+    cubeShader->setVec3("viewPos", freeCam.camera.Position);
+    cubeShader->setVec4("light.direction", LIGHT_DIRECTION);
+    cubeShader->setVec3("fogColor", BACKGROUND_COLOR);
+    cubeShader->setVec3("light.color", LIGHT_COLOR);
+    cubeShader->setVec3("material.ambient", AMBIENT);
+    cubeShader->setVec3("material.diffuse", DIFFUSE);
+    cubeShader->setVec3("material.specular", SPECULAR);
+    cubeShader->setFloat("material.shininess", SHININESS);
+
+    // cube
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, cube->getPosition());
+    model = glm::scale(model, cube->getScale());
+    cubeShader->setMat4("model", model);
+    cube->draw();
+
     waterShader->use();
     waterShader->setMat4("view", view);
     waterShader->setMat4("projection", projection);
@@ -163,29 +182,10 @@ void WaterScene::render()
     waterShader->setFloat("material.shininess", SHININESS);
 
     // water mesh
-    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     waterShader->setMat4("model", model);
     waterMesh->draw();
-
-    cubeShader->use();
-    cubeShader->setMat4("view", view);
-    cubeShader->setMat4("projection", projection);
-    cubeShader->setVec3("viewPos", freeCam.camera.Position);
-    cubeShader->setVec4("light.direction", LIGHT_DIRECTION);
-    cubeShader->setVec3("fogColor", BACKGROUND_COLOR);
-    cubeShader->setVec3("light.color", LIGHT_COLOR);
-    cubeShader->setVec3("material.ambient", AMBIENT);
-    cubeShader->setVec3("material.diffuse", DIFFUSE);
-    cubeShader->setVec3("material.specular", SPECULAR);
-    cubeShader->setFloat("material.shininess", SHININESS);
-
-    // cube
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, cube->getPosition());
-    model = glm::scale(model, cube->getScale());
-    cubeShader->setMat4("model", model);
-    cube->draw();
 }
 
 void WaterScene::renderDebug()
