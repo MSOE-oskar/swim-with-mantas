@@ -26,18 +26,18 @@ out vec2 TexCoord;
 // Credit: https://jayconrod.com/posts/34/water-simulation-in-glsl
 // and: https://gameidea.org/2023/12/01/3d-ocean-shader-using-gerstner-waves/
 // and: https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models
-vec3 gerstnerWave(vec3 vertex, vec2 p_direction, float p_speed, float p_steepness, float p_amplitude, float p_wavelength){
-    float frequency = 2.0 / p_wavelength;
-    float cos_factor = cos(frequency * dot(p_direction, vertex.xz) + p_speed * time);
+vec4 gerstnerWave(vec4 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength){
+    float frequency = 2.0 / wavelength;
+    float cosFactor = cos(frequency * dot(direction, vertex.xz) + speed * time);
 
-    float displaced_x = p_steepness * p_amplitude * p_direction.x * cos_factor;
-	float displaced_z = p_steepness * p_amplitude * p_direction.y * cos_factor;
-	float displaced_y = p_amplitude * sin(frequency * dot(p_direction, vertex.xz) + p_speed * time);
-	return vec3(displaced_x, displaced_y, displaced_z);
+    float xDisplacement = steepness * amplitude * direction.x * cosFactor;
+	float zDisplacement = steepness * amplitude * direction.y * cosFactor;
+	float yDisplacement = amplitude * sin(frequency * dot(direction, vertex.xz) + speed * time);
+	return vec4(xDisplacement, yDisplacement, zDisplacement, 0.0);
 }
 
-vec3 gerstner(vec3 vertex) {
-    vec3 result = waterHeight * vec3(0.0, 1.0, 0.0);
+vec4 gerstner(vec4 vertex) {
+    vec4 result = waterHeight * vec4(0.0, 1.0, 0.0, 0.0);
     // GPUGems 1, Chapter 1, Equation 9
     result += vertex;
     for(int i = 0; i < octaves; ++i) {
@@ -53,21 +53,21 @@ vec3 gerstner(vec3 vertex) {
     return result;
 }
 
-vec3 gerstner_normal(vec3 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength) {
+vec3 gerstnerNormal(vec3 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength) {
     float frequency = 2.0 / wavelength;
-    float cosfactor = cos(frequency * dot(direction, vertex.xz) + speed * time);
-	float sinfactor = sin(frequency * dot(direction, vertex.xz) + speed * time);
-	float x_normal = direction.x * frequency * amplitude * cosfactor;
-	float z_normal = direction.y * frequency * amplitude * cosfactor;
-	float y_normal = (steepness/frequency) * frequency * amplitude * sinfactor;
-	return vec3(x_normal, y_normal, z_normal);
+    float cosFactor = cos(frequency * dot(direction, vertex.xz) + speed * time);
+	float sinFactor = sin(frequency * dot(direction, vertex.xz) + speed * time);
+	float xNormal = direction.x * frequency * amplitude * cosFactor;
+	float zNormal = direction.y * frequency * amplitude * cosFactor;
+	float yNormal = (steepness/frequency) * frequency * amplitude * sinFactor;
+	return vec3(xNormal, yNormal, zNormal);
 }
 
 vec3 waveNormal(vec3 vertex) {
     vec3 result = vec3(0.0);
     // GPUGems 1, Chapter 1, Equation 12
     for (int i = 0; i < octaves; ++i) {
-        result += gerstner_normal(
+        result += gerstnerNormal(
             vertex, 
             normalize(direction[i]), 
             speed[i], 
@@ -85,7 +85,7 @@ void main()
     // Matrix Multiplication order is important! 
     // It goes in reverse order of how you want to apply them.
     // so fricken cool
-    vec4 worldPos = vec4(gerstner(vec3(model * vec4(aPos, 1.0))), 1.0);
+    vec4 worldPos = gerstner(model * vec4(aPos, 1.0));
     gl_Position = projection * view * worldPos;
 
     FragPos = vec3(worldPos);
