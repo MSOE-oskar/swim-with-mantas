@@ -135,16 +135,6 @@ void Shader::setFloat(const std::string &name, const float value) const
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::set4f(const std::string &name, const float v0, const float v1, const float v2, const float v3) const
-{
-    glUniform4f(glGetUniformLocation(ID, name.c_str()), v0, v1, v2, v3);
-}
-
-void Shader::setMat4(const std::string &name, glm::mat4 val) const
-{
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
-}
-
 void Shader::setVec2(const std::string &name, glm::vec2 val) const
 {
     glUniform2f(glGetUniformLocation(ID, name.c_str()), val.x, val.y);
@@ -158,4 +148,39 @@ void Shader::setVec3(const std::string &name, glm::vec3 val) const
 void Shader::setVec4(const std::string &name, glm::vec4 val) const
 {
     glUniform4f(glGetUniformLocation(ID, name.c_str()), val.x, val.y, val.z, val.w);
+}
+
+void Shader::setMat2(const std::string &name, glm::mat2 val) const
+{
+    glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::setMat3(const std::string &name, glm::mat3 val) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::setMat4(const std::string &name, glm::mat4 val) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::setFloatArray(const std::string &name, const int count, const float *values) const
+{
+    glUniform1fv(glGetUniformLocation(ID, name.c_str()), count, values);
+}
+
+void Shader::setVec2Array(const std::string &name, const int count, const glm::vec2 *values) const
+{
+    glUniform2fv(glGetUniformLocation(ID, name.c_str()), count, glm::value_ptr(values[0]));
+}
+
+void Shader::setVec3Array(const std::string &name, const int count, const glm::vec3 *values) const
+{
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), count, glm::value_ptr(values[0]));
+}
+
+void Shader::setVec4Array(const std::string &name, const int count, const glm::vec4 *values) const
+{
+    glUniform4fv(glGetUniformLocation(ID, name.c_str()), count, glm::value_ptr(values[0]));
 }

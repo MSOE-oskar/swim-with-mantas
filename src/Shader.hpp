@@ -35,12 +35,20 @@ public:
     // functions to set uniforms
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
+
     void setFloat(const std::string &name, float value) const;
-    void set4f(const std::string &name, float v0, float v1, float v2, float v3) const;
-    void setMat4(const std::string &name, glm::mat4 val) const;
     void setVec2(const std::string &name, glm::vec2 val) const;
     void setVec3(const std::string &name, glm::vec3 val) const;
     void setVec4(const std::string &name, glm::vec4 val) const;
+
+    void setMat2(const std::string &name, glm::mat2 val) const;
+    void setMat3(const std::string &name, glm::mat3 val) const;
+    void setMat4(const std::string &name, glm::mat4 val) const;
+
+    void setFloatArray(const std::string &name, int count, const float *values) const;
+    void setVec2Array(const std::string &name, int count, const glm::vec2 *values) const;
+    void setVec3Array(const std::string &name, int count, const glm::vec3 *values) const;
+    void setVec4Array(const std::string &name, int count, const glm::vec4 *values) const;
 };
 
 #endif // SHADER_H
