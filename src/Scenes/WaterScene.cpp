@@ -51,10 +51,12 @@ void WaterScene::init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     loadTextureImage("../textures/sand.png", textures[0], true);
+    // Water normal from: https://www.filterforge.com/filters/12066-normal.html
+    loadTextureImage("../textures/waternormal.jpg", textures[1], false);
 
     waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
     waterShader->use();
-    waterShader->setInt("waterTexture", 0);
+    waterShader->setInt("waterNormalMap", 0);
 
     cubeShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
     cubeShader->use();
@@ -65,11 +67,13 @@ void WaterScene::init()
 
     // enable blending for transparency in water
 
-    waterMesh = new Mesh();
+    waterMesh = new Mesh(std::vector<Texture>{Texture{textures[1]}});
 
     const float CHUNK_SIZE = 50.0f;
     const float STEP = 0.5f;
+    const float TEX_COORD_STEP = STEP / 10.0f;
     const glm::vec4 color = glm::vec4(0.0f, 0.5f, 1.0f, 0.5f);
+    float u = 0.0f, v = 0.0f;
 
     // generate water mesh... just a blanket
     for (float x = 0; x < CHUNK_SIZE; x += STEP)
@@ -80,22 +84,22 @@ void WaterScene::init()
                 glm::vec3(x, 0.0f, z),       // Position
                 glm::vec3(0.0f, 1.0f, 0.0f), // Normal
                 color,                       // Color
-                glm::vec2(0.0f, 0.0f)};      // TexCoords
+                glm::vec2(u, v)};            // TexCoords
             Vertex brVert = {
                 glm::vec3(x + STEP, 0.0f, z),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 color,
-                glm::vec2(1.0f, 0.0f)};
+                glm::vec2(u + TEX_COORD_STEP, v)};
             Vertex tlVert = {
                 glm::vec3(x, 0.0f, z + STEP),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 color,
-                glm::vec2(0.0f, 1.0f)};
+                glm::vec2(u, v + TEX_COORD_STEP)};
             Vertex trVert = {
                 glm::vec3(x + STEP, 0.0f, z + STEP),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 color,
-                glm::vec2(1.0f, 1.0f)};
+                glm::vec2(u + TEX_COORD_STEP, v + TEX_COORD_STEP)};
 
             // first triangle
             waterMesh->addVertex(blVert);
@@ -105,7 +109,10 @@ void WaterScene::init()
             waterMesh->addVertex(tlVert);
             waterMesh->addVertex(brVert);
             waterMesh->addVertex(trVert);
+
+            v += TEX_COORD_STEP;
         }
+        u += TEX_COORD_STEP;
     }
 
     waterMesh->recreateVBO();

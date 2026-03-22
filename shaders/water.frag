@@ -6,7 +6,7 @@ in vec4 Color;
 in vec3 FragPos;
 in vec2 TexCoord;
 
-uniform sampler2D waterTexture;
+uniform sampler2D waterNormalMap;
 uniform vec3 viewPos;
 
 struct Light {
@@ -29,8 +29,13 @@ void main()
     // ambient
     vec3 ambient = light.color * material.ambient;
   	
-    // diffuse 
-    vec3 norm = normalize(TBN[2]); // Normal vector from TBN matrix
+    
+    // sample normal map to calculate normal
+    vec3 norm = texture(waterNormalMap, TexCoord).rgb;
+    norm = norm * 2.0 - 1.0;   
+    norm = normalize(TBN * norm);
+
+    // diffuse
     vec3 lightDir = normalize(-light.direction.xyz);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.color * (diff * material.diffuse);
