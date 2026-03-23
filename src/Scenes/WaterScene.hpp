@@ -46,7 +46,7 @@ private:
 
     Shader *waterShader;
     Shader *cubeShader;
-    unsigned int textures[2];
+    unsigned int textures[3];
     FreeCam freeCam;
 
     Mesh *waterMesh;

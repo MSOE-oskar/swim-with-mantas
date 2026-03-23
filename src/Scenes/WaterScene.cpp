@@ -37,14 +37,14 @@ WaterScene::~WaterScene()
     delete waterShader;
     delete waterMesh;
     delete cube;
-    glDeleteTextures(1, textures);
+    glDeleteTextures(3, textures);
 }
 
 void WaterScene::init()
 {
     freeCam = FreeCam(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 
-    glGenTextures(1, textures);
+    glGenTextures(3, textures);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -52,11 +52,14 @@ void WaterScene::init()
 
     loadTextureImage("../textures/sand.png", textures[0], true);
     // Water normal from: https://www.filterforge.com/filters/12066-normal.html
-    loadTextureImage("../textures/waternormal.jpg", textures[1], false);
+    loadTextureImage("../textures/waternormal1.jpg", textures[1], false);
+    // https://www.filterforge.com/filters/9110-normal.html
+    loadTextureImage("../textures/waternormal2.png", textures[2], true);
 
     waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
     waterShader->use();
-    waterShader->setInt("waterNormalMap", 0);
+    waterShader->setInt("waterNormalMap1", 0);
+    waterShader->setInt("waterNormalMap2", 1);
 
     cubeShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
     cubeShader->use();
@@ -64,15 +67,16 @@ void WaterScene::init()
 
     // enable depth testing so that triangles don't draw over each other in 3D.
     glEnable(GL_DEPTH_TEST);
-
     // enable blending for transparency in water
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    waterMesh = new Mesh(std::vector<Texture>{Texture{textures[1]}});
+    waterMesh = new Mesh(std::vector<Texture>{Texture{textures[1]}, Texture{textures[2]}});
 
     const float CHUNK_SIZE = 50.0f;
     const float STEP = 0.5f;
     const float TEX_COORD_STEP = STEP / 10.0f;
-    const glm::vec4 color = glm::vec4(0.0f, 0.5f, 1.0f, 0.5f);
+    const glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.5f);
     float u = 0.0f, v = 0.0f;
 
     // generate water mesh... just a blanket
@@ -130,8 +134,6 @@ void WaterScene::update(float deltaTime)
 
 void WaterScene::render()
 {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // bg
     glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -193,6 +195,17 @@ void WaterScene::render()
 void WaterScene::renderDebug()
 {
     ImGui::Begin("WaterScene");
+
+    ImGui::Text("Lighting");
+    ImGui::ColorEdit3("Light Color", &LIGHT_COLOR[0]);
+    ImGui::ColorEdit3("Ambient", &AMBIENT[0]);
+    ImGui::ColorEdit3("Diffuse", &DIFFUSE[0]);
+    ImGui::ColorEdit3("Specular", &SPECULAR[0]);
+    ImGui::SliderFloat("Shininess", &SHININESS, 1.0f, 128.0f);
+
+    ImGui::Separator();
+
+    ImGui::Text("Water");
     ImGui::SliderFloat("Water Height", &WATER_HEIGHT, -1.0f, 1.0f);
     ImGui::SliderInt("Octaves", &OCTAVES, 1, 8);
     for (int i = 0; i < OCTAVES; ++i)
