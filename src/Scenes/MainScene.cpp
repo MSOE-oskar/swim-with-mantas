@@ -2,7 +2,7 @@
 // Created by sierzegao on 3/16/2026.
 //
 #include "MainScene.hpp"
-#include "Helpers/loadTextureImage.hpp"
+#include "Helpers/loadTextureHelpers.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -48,9 +48,6 @@ void MainScene::init()
     // Shader
     ourShader = new Shader("../shaders/shader.vert", "../shaders/shader.frag");
 
-    // Texture from image
-    glGenTextures(1, textures);
-
     // set texture wrapping and filtering.
     // The WRAP parameters are for wrapping along the S and T axes. recall that for textures, STPQ = XYZW
     // the MIN and MAG filters are for when OpenGL wants to increase/decrease the size of the
@@ -62,7 +59,7 @@ void MainScene::init()
 
     // this process of binding and manipulating is not something I'm used to...
     // Very different from OO.
-    loadTextureImage("../textures/sand.png", textures[0], true);
+    textures[0] = loadTextureImage("../textures/sand.png", true);
 
     ourShader->use();
     ourShader->setInt("sandTexture", 0);

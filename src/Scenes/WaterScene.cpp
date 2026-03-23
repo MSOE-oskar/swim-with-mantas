@@ -2,7 +2,7 @@
 // Created by sierzegao on 2026-03-17.
 //
 #include "WaterScene.hpp"
-#include "Helpers/loadTextureImage.hpp"
+#include "Helpers/loadTextureHelpers.hpp"
 #include "Player.hpp"
 #include "imgui/imgui.h"
 
@@ -44,17 +44,11 @@ void WaterScene::init()
 {
     freeCam = FreeCam(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 
-    glGenTextures(3, textures);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    loadTextureImage("../textures/sand.png", textures[0], true);
+    textures[0] = loadTextureImage("../textures/sand.png", true);
     // Water normal from: https://www.filterforge.com/filters/12066-normal.html
-    loadTextureImage("../textures/waternormal1.jpg", textures[1], false);
+    textures[1] = loadTextureImage("../textures/waternormal1.jpg", false);
     // https://www.filterforge.com/filters/9110-normal.html
-    loadTextureImage("../textures/waternormal2.png", textures[2], true);
+    textures[2] = loadTextureImage("../textures/waternormal2.png", true);
 
     waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
     waterShader->use();
