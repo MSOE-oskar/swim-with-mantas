@@ -80,6 +80,8 @@ mat3 waveTBN(vec3 vertex) {
         T += gerstnerTangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
         B += gerstnerBitangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
     }
+    T = normalize(T);
+    B = normalize(B);
     T = vec3(-T.x, T.y, 1 - T.z);
     B = vec3(1 - B.x, B.y, -B.z);
     vec3 N = cross(T, B);
