@@ -9,6 +9,7 @@
 #include "Shader.hpp"
 #include "Mesh.hpp"
 #include "Cube.hpp"
+#include "Skybox.hpp"
 
 class WaterScene : public Scene
 {
@@ -51,6 +52,7 @@ private:
 
     Mesh *waterMesh;
     Cube *cube;
+    Skybox *skybox;
 };
 
 #endif // WATERSCENE_H

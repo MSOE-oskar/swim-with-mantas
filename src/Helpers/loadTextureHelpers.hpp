@@ -67,6 +67,8 @@ inline unsigned int loadCubemap(std::vector<std::string> faces)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+    stbi_set_flip_vertically_on_load(false);
+
     int width, height, nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++)
     {

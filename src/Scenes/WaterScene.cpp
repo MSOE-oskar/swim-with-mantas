@@ -119,6 +119,15 @@ void WaterScene::init()
         glm::vec3(5.0f, -2.5f, 5.0f),
         glm::vec3(2.0f, 5.0f, 2.0f),
         std::vector<Texture>{Texture{textures[0]}});
+
+    std::vector<std::string> skyboxFaces = {
+        "../textures/skybox/jettelly_sunshine_RIGHT.png",
+        "../textures/skybox/jettelly_sunshine_LEFT.png",
+        "../textures/skybox/jettelly_sunshine_UP.png",
+        "../textures/skybox/jettelly_sunshine_DOWN.png",
+        "../textures/skybox/jettelly_sunshine_FRONT.png",
+        "../textures/skybox/jettelly_sunshine_BACK.png"};
+    skybox = new Skybox(skyboxFaces);
 }
 
 void WaterScene::update(float deltaTime)
@@ -137,6 +146,9 @@ void WaterScene::render()
     glfwGetFramebufferSize(glfwGetCurrentContext(), &windowWidth, &windowHeight);
     const glm::mat4 view = freeCam.camera.GetViewMatrix();
     const glm::mat4 projection = glm::perspective(glm::radians(freeCam.camera.Zoom), static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
+
+    // render skybox
+    skybox->render(glm::mat4(glm::mat3(view)), projection);
 
     cubeShader->use();
     cubeShader->setMat4("view", view);
