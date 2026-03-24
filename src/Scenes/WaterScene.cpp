@@ -61,6 +61,7 @@ void WaterScene::init()
 
     // enable depth testing so that triangles don't draw over each other in 3D.
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick
     // enable blending for transparency in water
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
