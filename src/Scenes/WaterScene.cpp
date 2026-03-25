@@ -26,6 +26,10 @@ glm::vec3 WaterScene::DIFFUSE = glm::vec3(0.08f, 0.28f, 0.38f);
 glm::vec3 WaterScene::SPECULAR = glm::vec3(0.85f, 0.88f, 0.92f);
 float WaterScene::SHININESS = 16.0f;
 
+float WaterScene::FRESNEL_BIAS = 0.3f;
+float WaterScene::FRESNEL_SCALE = 0.8f;
+float WaterScene::FRESNEL_POWER = 1.0f;
+
 WaterScene::WaterScene()
     : freeCam(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f),
       waterMesh(nullptr)
@@ -196,6 +200,10 @@ void WaterScene::render()
     waterShader->setVec3("material.specular", SPECULAR);
     waterShader->setFloat("material.shininess", SHININESS);
 
+    waterShader->setFloat("fresnel.bias", FRESNEL_BIAS);
+    waterShader->setFloat("fresnel.scale", FRESNEL_SCALE);
+    waterShader->setFloat("fresnel.power", FRESNEL_POWER);
+
     // this is terrible and hacky
     // this is why we need a global texture manager
     // bruh
@@ -219,6 +227,13 @@ void WaterScene::renderDebug()
     ImGui::ColorEdit3("Diffuse", &DIFFUSE[0]);
     ImGui::ColorEdit3("Specular", &SPECULAR[0]);
     ImGui::SliderFloat("Shininess", &SHININESS, 1.0f, 128.0f);
+
+    ImGui::Separator();
+
+    ImGui::Text("Fresnel");
+    ImGui::SliderFloat("Fresnel Bias", &FRESNEL_BIAS, 0.0f, 1.0f);
+    ImGui::SliderFloat("Fresnel Scale", &FRESNEL_SCALE, 0.0f, 1.0f);
+    ImGui::SliderFloat("Fresnel Power", &FRESNEL_POWER, 1.0f, 10.0f);
 
     ImGui::Separator();
 

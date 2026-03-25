@@ -44,6 +44,10 @@ private:
     static glm::vec3 DIFFUSE;
     static glm::vec3 SPECULAR;
     static float SHININESS;
+    // fresnel uniforms
+    static float FRESNEL_BIAS;
+    static float FRESNEL_SCALE;
+    static float FRESNEL_POWER;
 
     Shader *waterShader;
     Shader *cubeShader;
