@@ -29,9 +29,10 @@ out vec2 TexCoord;
 vec4 gerstnerWave(vec4 vertex, vec2 direction, float speed, float steepness, float amplitude, float wavelength){
     float frequency = 2.0 / wavelength;
     float cosFactor = cos(frequency * dot(direction, vertex.xz) + speed * time);
+    float effectiveSteepness = steepness / (frequency * amplitude * float(octaves));
 
-    float xDisplacement = steepness * amplitude * direction.x * cosFactor;
-	float zDisplacement = steepness * amplitude * direction.y * cosFactor;
+    float xDisplacement = effectiveSteepness * amplitude * direction.x * cosFactor;
+	float zDisplacement = effectiveSteepness * amplitude * direction.y * cosFactor;
 	float yDisplacement = amplitude * sin(frequency * dot(direction, vertex.xz) + speed * time);
 	return vec4(xDisplacement, yDisplacement, zDisplacement, 0.0);
 }
@@ -77,8 +78,10 @@ mat3 waveTBN(vec3 vertex) {
         float factorInnards = frequency * dot(normalize(direction[i]), vertex.xz) + speed[i] * time;
         float cosFactor = cos(factorInnards);
         float sinFactor = sin(factorInnards);
-        T += gerstnerTangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
-        B += gerstnerBitangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], steepness[i], amplitude[i], frequency);
+        float effectiveSteepness = steepness[i] / (frequency * amplitude[i] * float(octaves));
+
+        T += gerstnerTangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], effectiveSteepness, amplitude[i], frequency);
+        B += gerstnerBitangent(cosFactor, sinFactor, normalize(direction[i]), speed[i], effectiveSteepness, amplitude[i], frequency);
     }
     T = normalize(T);
     B = normalize(B);
