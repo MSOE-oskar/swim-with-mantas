@@ -8,6 +8,7 @@ in vec2 TexCoord;
 
 uniform sampler2D waterNormalMap1;
 uniform sampler2D waterNormalMap2;
+uniform samplerCube skyboxTexture;
 
 uniform vec3 viewPos;
 uniform float time;
@@ -53,5 +54,17 @@ void main()
     vec3 specular = light.color * (spec * material.specular);  
         
     vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result * Color.rgb, Color.a);
+
+    // calculate reflection
+    vec3 I = normalize(FragPos - viewPos);
+    vec3 R = reflect(I, norm);
+    vec3 reflectionColor = texture(skyboxTexture, R).rgb;
+
+    // Fresnel effect: more reflective at grazing angles, more diffuse when looking straight down
+    float fresnel = pow(1.0 - max(dot(viewDir, norm), 0.0), 2.0);
+    fresnel = clamp(fresnel, 0.15, 1.0);
+
+    vec3 finalColor = mix(0.5 * reflectionColor, result
+    , fresnel);
+    FragColor = vec4(finalColor, Color.a);
 }

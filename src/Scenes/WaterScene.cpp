@@ -117,8 +117,8 @@ void WaterScene::init()
     waterMesh->recreateVBO();
 
     cube = new Cube(
-        glm::vec3(5.0f, -2.5f, 5.0f),
-        glm::vec3(2.0f, 5.0f, 2.0f),
+        glm::vec3(0.0f, -10.5f, 0.0f),
+        glm::vec3(50.0f, 1.0f, 50.0f),
         std::vector<Texture>{Texture{textures[0]}});
 
     std::vector<std::string> skyboxFaces = {
@@ -129,6 +129,10 @@ void WaterScene::init()
         "../textures/skybox/jettelly_sunshine_FRONT.png",
         "../textures/skybox/jettelly_sunshine_BACK.png"};
     skybox = new Skybox(skyboxFaces);
+
+    // this is terrible
+    textures[3] = loadCubemap(skyboxFaces);
+    waterShader->setInt("skyboxTexture", 2);
 }
 
 void WaterScene::update(float deltaTime)
@@ -191,6 +195,12 @@ void WaterScene::render()
     waterShader->setVec3("material.diffuse", DIFFUSE);
     waterShader->setVec3("material.specular", SPECULAR);
     waterShader->setFloat("material.shininess", SHININESS);
+
+    // this is terrible and hacky
+    // this is why we need a global texture manager
+    // bruh
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures[3]);
 
     // water mesh
     model = glm::mat4(1.0f);
