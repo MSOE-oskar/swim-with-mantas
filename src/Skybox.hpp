@@ -7,10 +7,10 @@
 class Skybox
 {
 public:
-    Skybox(std::vector<std::string> faces);
+    Skybox(unsigned int cubemapTexture);
     ~Skybox();
 
-    void init(std::vector<std::string> faces);
+    void init();
     void render(glm::mat4 view, glm::mat4 projection);
     void cleanup();
 

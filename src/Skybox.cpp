@@ -1,6 +1,5 @@
 
 #include "Skybox.hpp"
-#include "Helpers/loadTextureHelpers.hpp"
 #include <glad/glad.h>
 #include <vector>
 
@@ -48,10 +47,10 @@ float Skybox::vertices[] = {
     -1.0f, -1.0f, 1.0f,
     1.0f, -1.0f, 1.0f};
 
-Skybox::Skybox(std::vector<std::string> faces)
-    : skyboxVAO(0), skyboxVBO(0), cubemapTexture(0), skyboxShader(nullptr)
+Skybox::Skybox(unsigned int cubemapTexture)
+    : skyboxVAO(0), skyboxVBO(0), cubemapTexture(cubemapTexture), skyboxShader(nullptr)
 {
-    init(faces);
+    init();
 }
 
 Skybox::~Skybox()
@@ -59,7 +58,7 @@ Skybox::~Skybox()
     cleanup();
 }
 
-void Skybox::init(std::vector<std::string> faces)
+void Skybox::init()
 {
     // generate VAO and VBO
     glGenVertexArrays(1, &skyboxVAO);
@@ -70,8 +69,6 @@ void Skybox::init(std::vector<std::string> faces)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glBindVertexArray(0);
-    // load cubemap texture
-    cubemapTexture = loadCubemap(faces);
 
     // load skybox shader
     skyboxShader = new Shader("../shaders/skybox.vert", "../shaders/skybox.frag");

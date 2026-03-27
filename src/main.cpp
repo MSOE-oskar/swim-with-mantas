@@ -45,6 +45,7 @@
 #include "Cube.hpp"
 #include "Chunk.hpp"
 #include "Scenes/SceneManager.hpp"
+#include "TextureManager.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -69,6 +70,7 @@ const GLFWvidmode *mode;        // Monitor video mode
 
 // scene manager the goat
 SceneManager sceneManager;
+TextureManager *textureManager;
 
 int main()
 {
@@ -132,6 +134,11 @@ int main()
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
+
+    // load textures, i don't think this should be in scene manager
+    // becuase.. i said so.
+    textureManager = TextureManager::getInstance();
+    textureManager->init();
 
     // initialize the scene manager and load the first scene
     sceneManager.init();

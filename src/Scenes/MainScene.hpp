@@ -47,7 +47,6 @@ private:
     // involves opengl calls that require a valid OpenGL context, which we don't
     // have until we call the init method.
     Shader *ourShader;
-    unsigned int textures[1];
     Cube *cubes[1];
     Chunk *chunks[4];
 

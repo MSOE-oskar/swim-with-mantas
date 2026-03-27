@@ -2,9 +2,9 @@
 // Created by sierzegao on 2026-03-17.
 //
 #include "WaterScene.hpp"
-#include "Helpers/loadTextureHelpers.hpp"
 #include "Player.hpp"
 #include "imgui/imgui.h"
+#include "TextureManager.hpp"
 
 glm::vec3 WaterScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
 float WaterScene::WATER_HEIGHT = 0.0f;
@@ -41,18 +41,11 @@ WaterScene::~WaterScene()
     delete waterShader;
     delete waterMesh;
     delete cube;
-    glDeleteTextures(3, textures);
 }
 
 void WaterScene::init()
 {
     freeCam = FreeCam(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-
-    textures[0] = loadTextureImage("../textures/sand.png", true);
-    // Water normal from: https://www.filterforge.com/filters/12066-normal.html
-    textures[1] = loadTextureImage("../textures/waternormal1.jpg", false);
-    // https://www.filterforge.com/filters/9110-normal.html
-    textures[2] = loadTextureImage("../textures/waternormal2.png", true);
 
     waterShader = new Shader("../shaders/water.vert", "../shaders/water.frag");
     waterShader->use();
@@ -70,7 +63,9 @@ void WaterScene::init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    waterMesh = new Mesh(std::vector<Texture>{Texture{textures[1]}, Texture{textures[2]}});
+    waterMesh = new Mesh(std::vector<Texture>{
+        Texture{TextureManager::getInstance()->getTexture("waterNormal1")},
+        Texture{TextureManager::getInstance()->getTexture("waterNormal2")}});
 
     const float CHUNK_SIZE = 50.0f;
     const float STEP = 0.5f;
@@ -123,19 +118,12 @@ void WaterScene::init()
     cube = new Cube(
         glm::vec3(0.0f, -10.5f, 0.0f),
         glm::vec3(50.0f, 1.0f, 50.0f),
-        std::vector<Texture>{Texture{textures[0]}});
+        std::vector<Texture>{Texture{
+            TextureManager::getInstance()->getTexture("sand")}});
 
-    std::vector<std::string> skyboxFaces = {
-        "../textures/skybox/jettelly_sunshine_RIGHT.png",
-        "../textures/skybox/jettelly_sunshine_LEFT.png",
-        "../textures/skybox/jettelly_sunshine_UP.png",
-        "../textures/skybox/jettelly_sunshine_DOWN.png",
-        "../textures/skybox/jettelly_sunshine_FRONT.png",
-        "../textures/skybox/jettelly_sunshine_BACK.png"};
-    skybox = new Skybox(skyboxFaces);
+    skybox = new Skybox(TextureManager::getInstance()->getTexture("skybox"));
 
     // this is terrible
-    textures[3] = loadCubemap(skyboxFaces);
     waterShader->setInt("skyboxTexture", 2);
 }
 
@@ -208,7 +196,7 @@ void WaterScene::render()
     // this is why we need a global texture manager
     // bruh
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textures[3]);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, TextureManager::getInstance()->getTexture("skybox"));
 
     // water mesh
     model = glm::mat4(1.0f);
@@ -259,12 +247,6 @@ void WaterScene::cleanup()
     delete waterShader;
     delete waterMesh;
     delete cube;
-
-    // TODO: loading and deleting textures on every scene load is really wasteful.
-    // We should probably have a texture manager and maybe shader manager too?
-    // For now since we only have one tiny texture it's not a big deal but this is not scalable at all.
-    // teehee :P
-    glDeleteTextures(1, textures);
 }
 
 void WaterScene::processInput(GLFWwindow *window, float deltaTime)

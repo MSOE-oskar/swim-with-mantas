@@ -2,12 +2,13 @@
 // Created by sierzegao on 3/16/2026.
 //
 #include "MainScene.hpp"
-#include "Helpers/loadTextureHelpers.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "imgui/imgui.h"
+
+#include "TextureManager.hpp"
 
 glm::vec3 MainScene::BACKGROUND_COLOR = glm::vec3(35.0f / 255.0f, 183.0f / 255.0f, 255.0f / 255.0f);
 glm::vec4 MainScene::LIGHT_DIRECTION = glm::vec4(0.5f, -0.0f, -0.312f, 0.0f);
@@ -57,10 +58,6 @@ void MainScene::init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // this process of binding and manipulating is not something I'm used to...
-    // Very different from OO.
-    textures[0] = loadTextureImage("../textures/sand.png", true);
-
     ourShader->use();
     ourShader->setInt("sandTexture", 0);
 
@@ -71,7 +68,8 @@ void MainScene::init()
     cubes[0] = new Cube(
         glm::vec3(-50.0f, -20.0f, -50.0f),
         glm::vec3(100.0f, 1.0f, 100.0f),
-        std::vector<Texture>{Texture{textures[0]}});
+        std::vector<Texture>{Texture{
+            TextureManager::getInstance()->getTexture("sand")}});
 
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     noise.SetFrequency(0.01f);
@@ -80,19 +78,19 @@ void MainScene::init()
 
     chunks[0] = new Chunk(
         glm::vec3(0.0f, 0.0f, 0.0f),
-        std::vector<Texture>{Texture{textures[0]}},
+        std::vector<Texture>{Texture{TextureManager::getInstance()->getTexture("sand")}},
         &noise);
     chunks[1] = new Chunk(
         glm::vec3(1.0f, 0.0f, 0.0f),
-        std::vector<Texture>{Texture{textures[0]}},
+        std::vector<Texture>{Texture{TextureManager::getInstance()->getTexture("sand")}},
         &noise);
     chunks[2] = new Chunk(
         glm::vec3(0.0f, 0.0f, 1.0f),
-        std::vector<Texture>{Texture{textures[0]}},
+        std::vector<Texture>{Texture{TextureManager::getInstance()->getTexture("sand")}},
         &noise);
     chunks[3] = new Chunk(
         glm::vec3(1.0f, 0.0f, 1.0f),
-        std::vector<Texture>{Texture{textures[0]}},
+        std::vector<Texture>{Texture{TextureManager::getInstance()->getTexture("sand")}},
         &noise);
 
     for (auto chunk : chunks)
@@ -190,11 +188,6 @@ void MainScene::cleanup()
         delete chunk;
     }
     delete ourShader;
-    // TODO: loading and deleting textures on every scene load is really wasteful.
-    // We should probably have a texture manager and maybe shader manager too?
-    // For now since we only have one tiny texture it's not a big deal but this is not scalable at all.
-    // teehee :P
-    glDeleteTextures(1, textures);
 }
 
 void MainScene::processInput(GLFWwindow *window, float deltaTime)
